@@ -2,14 +2,15 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
+  <!-- 让网页自己处理缩放/拖动：禁用浏览器默认双指缩放 -->
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
-  <title>Macintosh (System 1) Mock · Touch + Pinch Zoom</title>
+  <title>Macintosh (System 1) Mock · Mobile Pinch/Pan + PC Drag</title>
   <style>
     :root{
       --stageW: 900;
       --stageH: 640;
 
-      /* base fit (auto) * userZoom = --fit */
+      /* baseFit(自动适配) * userZoom(用户缩放) = --fit */
       --fit: 1;
 
       --scale: 1.0;
@@ -32,8 +33,11 @@
     html, body{
       margin:0;
       overflow:hidden;
-      overscroll-behavior: none;
-      touch-action: none;          /* prevent browser gestures */
+      overscroll-behavior:none;
+
+      /* 关键：我们用 Pointer Events 自己实现双指缩放/拖动 */
+      touch-action:none;
+
       -webkit-user-select:none;
       user-select:none;
       -webkit-tap-highlight-color: transparent;
@@ -52,10 +56,10 @@
       -webkit-font-smoothing:none;
       -moz-osx-font-smoothing:auto;
       text-rendering: optimizeSpeed;
-
       color:#fff;
     }
 
+    /* 视口容器：居中显示 */
     .center{
       position:fixed; inset:0;
       display:grid; place-items:center;
@@ -64,7 +68,7 @@
       touch-action:none;
     }
 
-    /* The viewport transform (pan) lives here */
+    /* stageWrap：承载“平移”；宽高等于缩放后的可见尺寸 */
     .stageWrap{
       width: calc(var(--stageW) * 1px * var(--fit));
       height: calc(var(--stageH) * 1px * var(--fit));
@@ -75,7 +79,7 @@
       touch-action:none;
     }
 
-    /* Scale lives on .stage (layout-safe on mobile) */
+    /* stage：承载“缩放”——避免移动端 transform 造成布局裁切 */
     .stage{
       width: calc(var(--stageW) * 1px);
       height: calc(var(--stageH) * 1px);
@@ -84,6 +88,7 @@
       border:5px solid #000;
       background:#fff;
       filter:contrast(1.06);
+
       transform: scale(var(--fit));
       transform-origin: top left;
       touch-action:none;
@@ -104,7 +109,7 @@
 
     .ui{
       position:absolute; inset:0;
-      background: repeating-linear-gradient(45deg, #e9e9e9 0 2px, #d9d9d9 2px 4px);
+      background: repeating-linear-gradient(45deg, var(--desk1) 0 2px, var(--desk2) 2px 4px);
       color:#000;
       touch-action:none;
     }
@@ -120,11 +125,12 @@
       mix-blend-mode:multiply;
     }
 
+    /* Menu bar */
     .menubar{
       position:absolute; left:0; right:0; top:0;
       height: var(--barH);
-      background:#fff;
-      border-bottom: var(--winBorder) solid #000;
+      background: var(--paper);
+      border-bottom: var(--winBorder) solid var(--bw);
       display:flex;
       align-items:center;
       padding: 0 calc(8px * var(--scale));
@@ -139,7 +145,7 @@
     .apple{
       width: calc(16px * var(--scale));
       height: calc(16px * var(--scale));
-      border: var(--winBorder) solid #000;
+      border: var(--winBorder) solid var(--bw);
       display:grid; place-items:center;
       font-weight:700;
       font-size: calc(12px * var(--scale));
@@ -153,15 +159,16 @@
       border:1px solid transparent;
       touch-action:none;
     }
-    .menu-item.active{ background:#000; color:#fff; }
+    .menu-item.active{ background: var(--bw); color: var(--paper); }
 
+    /* Dropdown */
     .dropdown{
       position:absolute;
       top: calc(var(--barH) - 1px);
       min-width: calc(240px * var(--scale));
-      background:#fff;
-      border: var(--winBorder) solid #000;
-      box-shadow: 0 calc(8px * var(--scale)) 0 rgba(0,0,0,.35);
+      background: var(--paper);
+      border: var(--winBorder) solid var(--bw);
+      box-shadow: 0 calc(8px * var(--scale)) 0 var(--shadow);
       display:none;
       z-index:9998;
       font-size: calc(var(--ui) * var(--scale));
@@ -177,10 +184,11 @@
       touch-action:none;
     }
     .dropdown .row:last-child{ border-bottom:0; }
-    .dropdown .row:hover{ background:#000; color:#fff; }
+    .dropdown .row:hover{ background: var(--bw); color: var(--paper); }
     .kbd{ opacity:.75; margin-left: calc(12px * var(--scale)); }
     .muted{ opacity:.7; }
 
+    /* Desktop */
     .desktop{
       position:absolute;
       left:0; right:0;
@@ -190,6 +198,7 @@
       touch-action:none;
     }
 
+    /* Icons */
     .icon{
       position:absolute;
       width: calc(76px * var(--scale));
@@ -201,8 +210,8 @@
       width: calc(36px * var(--scale));
       height: calc(36px * var(--scale));
       margin: 0 auto calc(6px * var(--scale));
-      border: var(--winBorder) solid #000;
-      background:#fff;
+      border: var(--winBorder) solid var(--bw);
+      background: var(--paper);
       display:grid; place-items:center;
       touch-action:none;
     }
@@ -212,16 +221,17 @@
       font-size: calc(var(--ui) * var(--scale));
       line-height:1.15;
       background:transparent;
-      color:#000;
+      color:var(--bw);
       touch-action:none;
     }
-    .icon.selected .label{ background:#000; color:#fff; }
+    .icon.selected .label{ background: var(--sel); color: var(--selText); }
 
+    /* Windows */
     .window{
       position:absolute;
-      background:#fff;
-      border: var(--winBorder) solid #000;
-      box-shadow: 0 calc(10px * var(--scale)) 0 rgba(0,0,0,.35);
+      background: var(--paper);
+      border: var(--winBorder) solid var(--bw);
+      box-shadow: 0 calc(10px * var(--scale)) 0 var(--shadow);
       min-width: calc(240px * var(--scale));
       min-height: calc(130px * var(--scale));
       display:none;
@@ -232,7 +242,7 @@
 
     .titlebar{
       height: calc(22px * var(--scale));
-      border-bottom: var(--winBorder) solid #000;
+      border-bottom: var(--winBorder) solid var(--bw);
       display:flex;
       align-items:center;
       gap: calc(8px * var(--scale));
@@ -244,8 +254,8 @@
     .closebox{
       width: calc(16px * var(--scale));
       height: calc(16px * var(--scale));
-      border: var(--winBorder) solid #000;
-      background:#fff;
+      border: var(--winBorder) solid var(--bw);
+      background: var(--paper);
       cursor:pointer;
       flex:0 0 auto;
       display:grid; place-items:center;
@@ -277,19 +287,18 @@
       bottom: 2px;
       width: calc(16px * var(--scale));
       height: calc(16px * var(--scale));
-      border-left: var(--winBorder) solid #000;
-      border-top: var(--winBorder) solid #000;
+      border-left: var(--winBorder) solid var(--bw);
+      border-top: var(--winBorder) solid var(--bw);
       background: repeating-linear-gradient(135deg, transparent 0 3px, rgba(0,0,0,.22) 3px 4px);
       cursor:nwse-resize;
       touch-action:none;
     }
-    .window.dialog .resize-handle{ display:none; }
 
     .scrollframe{
       display:grid;
       grid-template-columns: 1fr calc(16px * var(--scale));
-      border: var(--winBorder) solid #000;
-      background:#fff;
+      border: var(--winBorder) solid var(--bw);
+      background: var(--paper);
       height: calc(220px * var(--scale));
     }
     .scrollframe .pane{
@@ -297,10 +306,10 @@
       overflow:auto;
       user-select:text;
       -webkit-user-select:text;
-      touch-action: pan-y;
+      touch-action: pan-y; /* allow inner scroll */
     }
     .scrollframe .bar{
-      border-left: var(--winBorder) solid #000;
+      border-left: var(--winBorder) solid var(--bw);
       background: repeating-linear-gradient(45deg, #fff 0 2px, #eee 2px 4px);
       position:relative;
     }
@@ -309,14 +318,14 @@
       left:2px; right:2px;
       top: calc(22px * var(--scale));
       height: calc(44px * var(--scale));
-      border: var(--winBorder) solid #000;
-      background:#fff;
+      border: var(--winBorder) solid var(--bw);
+      background: var(--paper);
     }
 
     .list{
-      border: var(--winBorder) solid #000;
+      border: var(--winBorder) solid var(--bw);
       padding: calc(8px * var(--scale));
-      background:#fff;
+      background: var(--paper);
     }
     .list .item{
       display:flex;
@@ -325,7 +334,7 @@
       cursor:default;
       touch-action:none;
     }
-    .list .item:hover{ background:#000; color:#fff; }
+    .list .item:hover{ background: var(--bw); color: var(--paper); }
 
     .dialog{ width: calc(420px * var(--scale)); }
     .btnrow{
@@ -335,40 +344,120 @@
       margin-top: calc(10px * var(--scale));
     }
     .btn{
-      border: var(--winBorder) solid #000;
-      background:#fff;
+      border: var(--winBorder) solid var(--bw);
+      background: var(--paper);
       padding: calc(8px * var(--scale)) calc(12px * var(--scale));
       cursor:pointer;
       font-size: calc(var(--ui) * var(--scale));
       touch-action:none;
     }
+    .btn:active{ transform: translateY(1px); }
 
-    /* Calculator + Player trimmed for brevity (same as prior) */
+    /* Calculator */
     .calc{ display:grid; gap: calc(10px * var(--scale)); }
-    .calc-display{ border:2px solid #000; padding: calc(8px * var(--scale)) calc(10px * var(--scale)); font-size: calc(18px * var(--scale)); font-weight:700; text-align:right; height: calc(36px * var(--scale)); display:flex; align-items:center; justify-content:flex-end; overflow:hidden; user-select:text; -webkit-user-select:text; background:#fff; }
-    .calc-keys{ display:grid; grid-template-columns: repeat(4, 1fr); gap: calc(6px * var(--scale)); }
-    .key{ border:2px solid #000; background:#fff; padding: calc(12px * var(--scale)) 0; font-size: calc(13px * var(--scale)); cursor:pointer; text-align:center; user-select:none; touch-action:none; }
+    .calc-display{
+      border: var(--winBorder) solid var(--bw);
+      background:#fff;
+      padding: calc(8px * var(--scale)) calc(10px * var(--scale));
+      font-size: calc(18px * var(--scale));
+      font-weight:700;
+      text-align:right;
+      height: calc(36px * var(--scale));
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      overflow:hidden;
+      user-select:text;
+      -webkit-user-select:text;
+    }
+    .calc-keys{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: calc(6px * var(--scale));
+    }
+    .key{
+      border: var(--winBorder) solid var(--bw);
+      background:#fff;
+      padding: calc(12px * var(--scale)) 0;
+      font-size: calc(13px * var(--scale));
+      cursor:pointer;
+      text-align:center;
+      user-select:none;
+      touch-action:none;
+    }
+    .key:active{ transform: translateY(1px); }
     .key.wide{ grid-column: span 2; }
     .key.op{ font-weight:700; }
-    .key:active, .btn:active{ transform: translateY(1px); }
 
+    /* Music */
     .player{ display:grid; gap: calc(10px * var(--scale)); }
-    .player-head{ border:2px solid #000; padding: calc(8px * var(--scale)); background:#fff; display:grid; gap: calc(6px * var(--scale)); }
-    .trackline{ display:flex; justify-content:space-between; gap: calc(10px * var(--scale)); align-items:center; font-weight:700; }
-    .trackline .name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .time{ display:flex; justify-content:space-between; font-size: calc(11px * var(--scale)); }
-    .controls{ display:flex; gap: calc(8px * var(--scale)); align-items:center; }
-    .range{ width:100%; -webkit-appearance:none; appearance:none; height: calc(18px * var(--scale)); background:#fff; border:2px solid #000; outline:none; margin:0; touch-action: pan-x; }
-    .range::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width: calc(14px * var(--scale)); height: calc(20px * var(--scale)); border:2px solid #000; background:#fff; cursor:pointer; }
+    .player-head{
+      border: var(--winBorder) solid var(--bw);
+      padding: calc(8px * var(--scale));
+      background:#fff;
+      display:grid;
+      gap: calc(6px * var(--scale));
+    }
+    .trackline{
+      display:flex;
+      justify-content:space-between;
+      gap: calc(10px * var(--scale));
+      align-items:center;
+      font-weight:700;
+    }
+    .trackline .name{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .time{
+      display:flex;
+      justify-content:space-between;
+      font-size: calc(11px * var(--scale));
+    }
+    .controls{
+      display:flex;
+      gap: calc(8px * var(--scale));
+      align-items:center;
+    }
+    .range{
+      width:100%;
+      -webkit-appearance:none;
+      appearance:none;
+      height: calc(18px * var(--scale));
+      background:#fff;
+      border: var(--winBorder) solid var(--bw);
+      outline:none;
+      margin:0;
+      touch-action: pan-x;
+    }
+    .range::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      appearance:none;
+      width: calc(14px * var(--scale));
+      height: calc(20px * var(--scale));
+      border: var(--winBorder) solid var(--bw);
+      background:#fff;
+      cursor:pointer;
+    }
     .player-note{ font-size: calc(11px * var(--scale)); }
 
     .outerTip{
-      position:fixed; left:12px; right:12px; bottom:10px;
-      font-size:12px; opacity:.9; color: rgba(255,255,255,.9);
+      position:fixed;
+      left:12px; right:12px;
+      bottom:10px;
+      font-size:12px;
+      opacity:.88;
+      color: rgba(255,255,255,.88);
       text-shadow: 0 2px 0 rgba(0,0,0,.55);
       pointer-events:none;
     }
-    .outerTip code{ background: rgba(0,0,0,.45); padding: 2px 6px; border-radius:6px; border: 1px solid rgba(255,255,255,.20); }
+    .outerTip code{
+      background: rgba(0,0,0,.45);
+      padding: 2px 6px;
+      border-radius:6px;
+      border: 1px solid rgba(255,255,255,.20);
+    }
 
     body.big .ui{ --scale: 1.25; }
     body.huge .ui{ --scale: 1.55; }
@@ -409,9 +498,6 @@
             <div class="row" data-action="openCalc">Open Calculator</div>
             <div class="row" data-action="openMusic">Open Music Player</div>
             <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
-            <div class="row" data-action="noteSave">Save Note <span class="kbd">⌘S</span></div>
-            <div class="row" data-action="noteOpen">Open Note…</div>
-            <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
             <div class="row" data-action="closeFront">Close <span class="kbd">⌘W</span></div>
           </div>
 
@@ -431,12 +517,10 @@
           <div class="dropdown" id="dd-special">
             <div class="row" data-action="cleanup">Clean Up Desktop</div>
             <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
-            <div class="row" data-action="restart">Restart…</div>
-            <div class="row" data-action="shutdown">Shut Down…</div>
+            <div class="row" data-action="recenter">Re-center View</div>
           </div>
 
           <div class="desktop" id="desktop">
-            <!-- icons -->
             <div class="icon" id="icon-hd" data-open="finder" style="left:24px; top:24px;">
               <div class="glyph" aria-hidden="true">
                 <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
@@ -507,7 +591,6 @@
             </div>
           </div>
 
-          <!-- windows -->
           <div class="window visible" id="win-finder" style="left:140px; top:80px; width:540px; height:360px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-finder">×</div>
@@ -519,14 +602,13 @@
                   <div class="muted">Macintosh HD</div>
                   <div style="height:8px"></div>
                   <div class="list" id="finderList">
-                    <div class="item" data-open="about"><span>System Folder</span><span class="muted">Folder</span></div>
                     <div class="item" data-open="note"><span>Note Pad</span><span class="muted">Application</span></div>
                     <div class="item" data-open="calc"><span>Calculator</span><span class="muted">Application</span></div>
                     <div class="item" data-open="music"><span>Music Player</span><span class="muted">Application</span></div>
                     <div class="item" data-open="about"><span>Read Me</span><span class="muted">Text</span></div>
                   </div>
                   <div style="height:12px"></div>
-                  <div class="muted">Two-finger: pinch to zoom, drag to pan · One finger: drag icons/windows</div>
+                  <div class="muted">手机：双指缩放/拖动视图 · 单指拖动图标/窗口</div>
                 </div>
                 <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
               </div>
@@ -555,9 +637,12 @@
                     touch-action: pan-y;
                     -webkit-user-select:text;
                     user-select:text;
-                  ">Pinch to zoom, drag (two fingers) to pan.
+                  ">✅ 现在不会再把你缩放后的视图强制回正。
 
-把 song.mp3 放在同目录。</textarea>
+提示：
+- 双指缩放：缩放整个“屏幕”
+- 双指拖动：平移视图
+- Special → Re-center View：手动回到初始居中适配</textarea>
                 </div>
                 <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
               </div>
@@ -629,7 +714,7 @@
                 </div>
 
                 <div class="player-note muted">
-                  把 <b>song.mp3</b> 放在与本 HTML 同目录（GitHub Pages：仓库根目录）。
+                  把 <b>song.mp3</b> 放在与本 HTML 同目录。
                 </div>
               </div>
             </div>
@@ -642,17 +727,9 @@
               <div class="wintitle">About the Macintosh</div>
             </div>
             <div class="content">
-              <div style="display:flex; gap:12px; align-items:flex-start;">
-                <div style="width:64px; height:64px; border:var(--winBorder) solid #000; background:#fff; display:grid; place-items:center;">
-                  <div style="font-weight:700; font-size:26px;"></div>
-                </div>
-                <div>
-                  <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
-                  <div class="muted">Pinch to zoom + two-finger pan</div>
-                </div>
-              </div>
+              <div class="muted">System 1 style mock · Touch + PC ready</div>
               <div class="btnrow">
-                <button class="btn" data-action="closeAbout">OK</button>
+                <button class="btn" data-close="win-about">OK</button>
               </div>
             </div>
           </div>
@@ -683,710 +760,805 @@
             </div>
           </div>
 
-        </div><!-- ui -->
-      </div><!-- stage -->
-    </div><!-- stageWrap -->
-  </div><!-- center -->
-
-  <div class="outerTip">
-    ✅ 双指：缩放 + 拖动视图｜单指：拖图标/窗口｜音乐：<code>./song.mp3</code>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    const root = document.documentElement;
-    const center = document.getElementById('center');
-    const stageWrap = document.getElementById('stageWrap');
-    const stage = document.getElementById('stage');
-    const ui = document.getElementById('ui');
-    const desktop = document.getElementById('desktop');
+  <div class="outerTip">
+    手机：双指缩放/拖动视图 · PC：拖图标/窗口 · 手动回正：<code>Special → Re-center View</code>
+  </div>
 
-    const $  = (sel, r=document) => r.querySelector(sel);
-    const $$ = (sel, r=document) => [...r.querySelectorAll(sel)];
+<script>
+  // ===== Helpers =====
+  const root = document.documentElement;
+  const center = document.getElementById("center");
+  const stageWrap = document.getElementById("stageWrap");
+  const stage = document.getElementById("stage");
+  const ui = document.getElementById("ui");
+  const desktop = document.getElementById("desktop");
+  const $  = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 
-    // ===== Viewport state: autoFit * userZoom, plus pan in CSS pixels =====
-    const view = {
-      baseFit: 1,
-      userZoom: 1,
-      panX: 0,
-      panY: 0,
-      minZoom: 0.6,
-      maxZoom: 3.0,
-    };
+  function stageW(){ return parseFloat(getComputedStyle(root).getPropertyValue("--stageW")) || 900; }
+  function stageH(){ return parseFloat(getComputedStyle(root).getPropertyValue("--stageH")) || 640; }
 
-    function stageW(){ return parseFloat(getComputedStyle(root).getPropertyValue('--stageW')) || 900; }
-    function stageH(){ return parseFloat(getComputedStyle(root).getPropertyValue('--stageH')) || 640; }
+  // ===== View state (for mobile pinch/pan) =====
+  const view = {
+    baseFit: 1,
+    userZoom: 1,
+    panX: 0,
+    panY: 0,
+    minZoom: 0.6,
+    maxZoom: 3.0,
+  };
 
-    function applyView(){
-      const fit = view.baseFit * view.userZoom;
-      root.style.setProperty('--fit', String(fit));
+  function effFit(){ return view.baseFit * view.userZoom; }
 
-      // clamp pan so user doesn't lose the stage entirely
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const sw = stageW() * fit;
-      const sh = stageH() * fit;
+  function computeBaseFit(){
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const pad = 16;
+    const s = Math.min((vw - pad) / stageW(), (vh - pad) / stageH(), 1);
+    view.baseFit = Math.max(0.1, s);
+  }
 
-      // allow a bit of overscroll for feel
-      const margin = 80;
+  // ✅ 初始：自动居中 + 自动缩放（由 grid 居中；fit 自适应）
+  function resetViewToInitial(){
+    computeBaseFit();
+    view.userZoom = 1;
+    view.panX = 0;
+    view.panY = 0;
+    applyView();
+  }
 
-      // centered by grid; pan is relative to center
-      const maxPanX = Math.max(0, (sw + vw) / 2 - margin);
-      const maxPanY = Math.max(0, (sh + vh) / 2 - margin);
+  function applyView(){
+    const fit = effFit();
+    root.style.setProperty("--fit", String(fit));
 
-      view.panX = Math.max(-maxPanX, Math.min(maxPanX, view.panX));
-      view.panY = Math.max(-maxPanY, Math.min(maxPanY, view.panY));
+    // clamp pan (prevent losing the stage forever)
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const sw = stageW() * fit;
+    const sh = stageH() * fit;
 
-      stageWrap.style.transform = `translate(${view.panX}px, ${view.panY}px)`;
+    const margin = 120; // allow some overscroll
+    const maxPanX = Math.max(0, (sw + vw)/2 - margin);
+    const maxPanY = Math.max(0, (sh + vh)/2 - margin);
+
+    view.panX = Math.max(-maxPanX, Math.min(maxPanX, view.panX));
+    view.panY = Math.max(-maxPanY, Math.min(maxPanY, view.panY));
+
+    stageWrap.style.transform = `translate(${view.panX}px, ${view.panY}px)`;
+  }
+
+  // resize/orientation: update baseFit but KEEP user zoom & pan (no forced recenter)
+  window.addEventListener("resize", () => { computeBaseFit(); applyView(); });
+  window.addEventListener("orientationchange", () => { computeBaseFit(); applyView(); });
+
+  // ===== Gesture handling (only on non-interactive background) =====
+  const pointers = new Map(); // id -> {x,y, interactive}
+  let gesture = null;         // {mode, prevMidX, prevMidY, prevDist, prevEff, startZoom}
+
+  function isInteractiveTarget(t){
+    if(!t) return false;
+    return !!(t.closest(".icon") || t.closest(".window") || t.closest(".menubar") || t.closest(".dropdown") || t.closest("input, textarea, button, .pane"));
+  }
+  function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+  function mid(a,b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+
+  // ⚠️ 关键修复：仅当“开始点在非交互区域”时，我们才 capture + preventDefault
+  function shouldHandleViewportGesture(){
+    if(pointers.size === 0) return false;
+    for(const p of pointers.values()){
+      if(p.interactive) return false;
+    }
+    return true;
+  }
+
+  center.addEventListener("pointerdown", (e) => {
+    const interactive = isInteractiveTarget(e.target);
+    pointers.set(e.pointerId, { x:e.clientX, y:e.clientY, interactive });
+
+    // 如果起点在交互控件上，不做任何 viewport 捕获/阻止；让图标/窗口正常点击拖动（PC 也靠这个）
+    if(interactive) return;
+
+    // only background pointers captured for gesture smoothness
+    center.setPointerCapture?.(e.pointerId);
+
+    if(pointers.size === 1){
+      const p = pointers.get(e.pointerId);
+      gesture = { mode:"pan", prevMidX:p.x, prevMidY:p.y, prevEff: effFit() };
+      // 注意：这里不 preventDefault，让单指在空白处仍可点菜单等（菜单本身是 interactive 不会走到这）
     }
 
-    function computeBaseFit(){
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const pad = 16;
-      const s = Math.min((vw - pad) / stageW(), (vh - pad) / stageH(), 1);
-      view.baseFit = Math.max(0.1, s);
+    if(pointers.size === 2 && shouldHandleViewportGesture()){
+      const [a,b] = [...pointers.values()];
+      const m = mid(a,b);
+      gesture = {
+        mode:"pinch",
+        prevMidX: m.x,
+        prevMidY: m.y,
+        prevDist: Math.max(1, dist(a,b)),
+        prevEff: effFit(),
+      };
+      e.preventDefault();
     }
+  }, { passive:false });
 
-    function resetView(){
-      computeBaseFit();
-      view.userZoom = 1;
-      view.panX = 0;
-      view.panY = 0;
+  center.addEventListener("pointermove", (e) => {
+    const p = pointers.get(e.pointerId);
+    if(!p) return;
+    p.x = e.clientX; p.y = e.clientY;
+
+    if(!gesture) return;
+    if(!shouldHandleViewportGesture()) return;
+
+    if(gesture.mode === "pinch" && pointers.size >= 2){
+      const [a,b] = [...pointers.values()];
+      const m = mid(a,b);
+      const d = Math.max(1, dist(a,b));
+
+      // midpoint pan
+      view.panX += (m.x - gesture.prevMidX);
+      view.panY += (m.y - gesture.prevMidY);
+
+      // zoom ratio
+      const ratio = d / gesture.prevDist;
+      const oldZoom = view.userZoom;
+      view.userZoom = Math.max(view.minZoom, Math.min(view.maxZoom, view.userZoom * ratio));
+
+      // scale-around-midpoint (keeps content under fingers)
+      const oldEff = gesture.prevEff;
+      const newEff = effFit();
+      const r = newEff / Math.max(0.0001, oldEff);
+
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      view.panX = r * view.panX + (1 - r) * (m.x - cx);
+      view.panY = r * view.panY + (1 - r) * (m.y - cy);
+
       applyView();
+
+      gesture.prevMidX = m.x;
+      gesture.prevMidY = m.y;
+      gesture.prevDist = d;
+      gesture.prevEff = newEff;
+
+      e.preventDefault();
+      return;
     }
 
-    window.addEventListener('resize', () => { computeBaseFit(); applyView(); });
-    window.addEventListener('orientationchange', () => { computeBaseFit(); applyView(); });
-
-    // ===== Gestures: pinch zoom + two-finger pan; one-finger pan on background =====
-    const pointers = new Map(); // id -> {x,y, targetInteractive:boolean}
-    let gesture = null; // {mode, prevMidX, prevMidY, prevDist, prevEff}
-
-    function isInteractiveTarget(t){
-      // If user starts on icon/window/menu/inputs, do NOT treat as viewport pan
-      if(!t) return false;
-      return !!(t.closest('.icon') || t.closest('.window') || t.closest('.menubar') || t.closest('.dropdown') || t.closest('input, textarea, button, .pane'));
+    if(gesture.mode === "pan" && pointers.size === 1){
+      const only = [...pointers.values()][0];
+      view.panX += (only.x - gesture.prevMidX);
+      view.panY += (only.y - gesture.prevMidY);
+      applyView();
+      gesture.prevMidX = only.x;
+      gesture.prevMidY = only.y;
+      // 不阻止默认也 OK；但某些浏览器可能尝试滚动页面，我们这里 touch-action:none 已禁
+      e.preventDefault();
+      return;
     }
+  }, { passive:false });
 
-    function dist2(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
-    function mid2(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
-
-    function effFit(){ return view.baseFit * view.userZoom; }
-
-    center.addEventListener('pointerdown', (e) => {
-      pointers.set(e.pointerId, { x:e.clientX, y:e.clientY, interactive:isInteractiveTarget(e.target) });
-      // capture to keep receiving moves even if finger leaves
-      center.setPointerCapture?.(e.pointerId);
-
-      // Start gesture when two pointers are down AND neither started on interactive controls
-      if(pointers.size === 2){
-        const pts = [...pointers.values()];
-        if(!pts[0].interactive && !pts[1].interactive){
-          const m = mid2(pts[0], pts[1]);
-          gesture = {
-            mode: 'pinch',
-            prevMidX: m.x,
-            prevMidY: m.y,
-            prevDist: dist2(pts[0], pts[1]),
-            prevEff: effFit(),
-          };
-        }
-      }else if(pointers.size === 1){
-        const p = pointers.get(e.pointerId);
-        // One-finger pan only if NOT on interactive elements
-        if(p && !p.interactive){
-          gesture = {
-            mode: 'pan',
-            prevMidX: p.x,
-            prevMidY: p.y,
-            prevEff: effFit(),
-          };
-        }
-      }
-    }, { passive:false });
-
-    center.addEventListener('pointermove', (e) => {
-      const p = pointers.get(e.pointerId);
-      if(!p) return;
-      p.x = e.clientX; p.y = e.clientY;
-
-      if(!gesture) return;
-
-      if(gesture.mode === 'pinch' && pointers.size >= 2){
-        const [a,b] = [...pointers.values()];
-        if(a.interactive || b.interactive) return;
-
-        const m = mid2(a,b);
-        const d = dist2(a,b);
-        const oldEff = gesture.prevEff;
-
-        // pan by midpoint delta
-        view.panX += (m.x - gesture.prevMidX);
-        view.panY += (m.y - gesture.prevMidY);
-
-        // zoom by distance ratio
-        const ratio = d / Math.max(1, gesture.prevDist);
-        const newZoom = Math.max(view.minZoom, Math.min(view.maxZoom, view.userZoom * ratio));
-        view.userZoom = newZoom;
-
-        // scaling about midpoint relative to viewport center keeps the content under fingers
-        const newEff = effFit();
-        const r = newEff / Math.max(0.0001, oldEff);
-        const cx = window.innerWidth / 2;
-        const cy = window.innerHeight / 2;
-
-        view.panX = r * view.panX + (1 - r) * (m.x - cx);
-        view.panY = r * view.panY + (1 - r) * (m.y - cy);
-
-        applyView();
-
-        // update prevs
-        gesture.prevMidX = m.x;
-        gesture.prevMidY = m.y;
-        gesture.prevDist = d;
-        gesture.prevEff = newEff;
-
-        e.preventDefault();
-      }
-
-      if(gesture.mode === 'pan' && pointers.size === 1){
-        const only = [...pointers.values()][0];
-        if(only.interactive) return;
-        view.panX += (only.x - gesture.prevMidX);
-        view.panY += (only.y - gesture.prevMidY);
-        applyView();
-        gesture.prevMidX = only.x;
-        gesture.prevMidY = only.y;
-        e.preventDefault();
-      }
-    }, { passive:false });
-
-    function endPointer(id){
-      pointers.delete(id);
-      if(pointers.size < 2 && gesture && gesture.mode === 'pinch'){
-        gesture = null;
-      }
-      if(pointers.size === 0){
-        gesture = null;
-      }
-      // If one finger remains and it's non-interactive, allow pan continue
-      if(pointers.size === 1){
-        const only = [...pointers.values()][0];
-        if(only && !only.interactive){
-          gesture = { mode:'pan', prevMidX: only.x, prevMidY: only.y, prevEff: effFit() };
-        }else{
-          gesture = null;
-        }
-      }
-    }
-
-    center.addEventListener('pointerup', (e) => endPointer(e.pointerId), { passive:true });
-    center.addEventListener('pointercancel', (e) => endPointer(e.pointerId), { passive:true });
-
-    // Double-tap on background to reset view
-    let lastBgTap = 0;
-    center.addEventListener('pointerup', (e) => {
-      const p = pointers.get(e.pointerId);
-      // already removed by pointerup handler order? (depends). We'll just check target.
-      if(isInteractiveTarget(e.target)) return;
-      if(e.pointerType !== 'touch') return;
-      const now = performance.now();
-      if(now - lastBgTap < 320){
-        resetView();
-        lastBgTap = 0;
+  function endPointer(id){
+    pointers.delete(id);
+    if(pointers.size === 0) gesture = null;
+    if(pointers.size === 1){
+      const only = [...pointers.values()][0];
+      // if remaining pointer is background, keep pan mode
+      if(only && !only.interactive){
+        gesture = { mode:"pan", prevMidX:only.x, prevMidY:only.y, prevEff: effFit() };
       }else{
-        lastBgTap = now;
-      }
-    }, { passive:true });
-
-    // ===== Existing app logic (windows/icons) =====
-    let zTop = 50;
-    let frontWin = null;
-    let activeMenu = null;
-
-    function getFit(){ return effFit(); }
-    function getScale(){ return parseFloat(getComputedStyle(ui).getPropertyValue('--scale')) || 1; }
-    function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
-    function snap(n, step){ return Math.round(n / step) * step; }
-    function stageRect(){ return stage.getBoundingClientRect(); }
-    function uiRect(){ return ui.getBoundingClientRect(); }
-    function desktopRect(){ return desktop.getBoundingClientRect(); }
-
-    function addTapOpen(el, onOpen){
-      let lastT = 0;
-      el.addEventListener("pointerup", (e) => {
-        if(e.pointerType !== "touch") return;
-        const now = performance.now();
-        if(now - lastT < 320){
-          onOpen();
-          lastT = 0;
-        }else{
-          lastT = now;
-        }
-      });
-    }
-    function addLongPressOpen(el, onOpen){
-      let timer = null;
-      el.addEventListener("pointerdown", (e) => {
-        if(e.pointerType !== "touch") return;
-        timer = setTimeout(() => { onOpen(); }, 450);
-      });
-      el.addEventListener("pointermove", () => { if(timer) clearTimeout(timer); timer=null; });
-      el.addEventListener("pointerup",   () => { if(timer) clearTimeout(timer); timer=null; });
-      el.addEventListener("pointercancel",() => { if(timer) clearTimeout(timer); timer=null; });
-    }
-
-    function pad2(n){ return String(n).padStart(2,"0"); }
-    setInterval(() => {
-      const d = new Date();
-      $("#clock").textContent = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
-    }, 500);
-
-    function beep(){
-      try{
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = "square"; o.frequency.value = 740;
-        g.gain.value = 0.03;
-        o.connect(g); g.connect(ctx.destination);
-        o.start();
-        setTimeout(() => { o.stop(); ctx.close(); }, 90);
-      }catch(e){}
-    }
-
-    function setFront(win){
-      if(!win) return;
-      $$(".window", ui).forEach(w => w.classList.add("inactive"));
-      win.classList.remove("inactive");
-      zTop += 1;
-      win.style.zIndex = zTop;
-      frontWin = win;
-    }
-    function showWin(id){
-      const win = document.getElementById(id);
-      if(!win) return;
-      win.classList.add("visible");
-      setFront(win);
-    }
-    function hideWin(id){
-      const win = document.getElementById(id);
-      if(!win) return;
-      win.classList.remove("visible");
-      if(frontWin === win) frontWin = null;
-      const vis = $$(".window.visible", ui);
-      if(vis.length) setFront(vis[vis.length-1]);
-    }
-
-    $$(".closebox", ui).forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        const id = btn.getAttribute("data-close");
-        if(id) hideWin(id);
-        e.stopPropagation();
-      });
-    });
-
-    $$(".window", ui).forEach(win => win.addEventListener("pointerdown", () => setFront(win)));
-
-    let dragWin = null, resizeWin = null, dragIcon = null;
-    const DRAG_START_PX = 6;
-
-    function onPointerDownTitle(e){
-      const win = e.currentTarget.closest(".window");
-      if(e.target.closest(".closebox")) return;
-      setFront(win);
-
-      const fit = getFit();
-      const ur = uiRect();
-      const rect = win.getBoundingClientRect();
-
-      dragWin = {
-        win, pointerId: e.pointerId,
-        startX: e.clientX, startY: e.clientY,
-        origL: (rect.left - ur.left) / fit,
-        origT: (rect.top  - ur.top ) / fit,
-        fit, moved:false
-      };
-      win.setPointerCapture?.(e.pointerId);
-      e.preventDefault(); e.stopPropagation();
-    }
-    $$(".window .titlebar", ui).forEach(tb => tb.addEventListener("pointerdown", onPointerDownTitle));
-
-    function onPointerDownResize(e){
-      const id = e.currentTarget.getAttribute("data-resize");
-      const win = document.getElementById(id);
-      if(!win) return;
-      setFront(win);
-
-      const fit = getFit();
-      const ur = uiRect();
-      const rect = win.getBoundingClientRect();
-
-      resizeWin = {
-        win, pointerId: e.pointerId,
-        startX: e.clientX, startY: e.clientY,
-        origW: rect.width / fit,
-        origH: rect.height / fit,
-        left: (rect.left - ur.left) / fit,
-        top:  (rect.top  - ur.top ) / fit,
-        fit
-      };
-      win.setPointerCapture?.(e.pointerId);
-      e.preventDefault(); e.stopPropagation();
-    }
-    $$(".resize-handle", ui).forEach(h => h.addEventListener("pointerdown", onPointerDownResize));
-
-    function clearIconSelection(){ $$(".icon", ui).forEach(i => i.classList.remove("selected")); }
-
-    function onPointerDownIcon(e){
-      const icon = e.currentTarget;
-      clearIconSelection();
-      icon.classList.add("selected");
-
-      const fit = getFit();
-      const dr = desktopRect();
-      const rect = icon.getBoundingClientRect();
-
-      dragIcon = {
-        icon, pointerId: e.pointerId,
-        startX: e.clientX, startY: e.clientY,
-        origL: (rect.left - dr.left) / fit,
-        origT: (rect.top  - dr.top ) / fit,
-        fit, moved:false
-      };
-      icon.setPointerCapture?.(e.pointerId);
-      e.preventDefault(); e.stopPropagation();
-    }
-
-    $$(".icon", ui).forEach(icon => {
-      icon.addEventListener("pointerdown", onPointerDownIcon);
-      icon.addEventListener("dblclick", () => { const open = icon.getAttribute("data-open"); if(open) openThing(open); });
-      addTapOpen(icon, () => { const open = icon.getAttribute("data-open"); if(open) openThing(open); });
-      addLongPressOpen(icon, () => { const open = icon.getAttribute("data-open"); if(open) openThing(open); });
-    });
-
-    desktop.addEventListener("pointerdown", (e) => {
-      if(!e.target.closest(".icon") && !e.target.closest(".window")){
-        clearIconSelection();
-        closeMenus();
-      }
-    });
-
-    window.addEventListener("pointermove", (e) => {
-      if(resizeWin && e.pointerId === resizeWin.pointerId){
-        const fit = resizeWin.fit;
-        const dx = (e.clientX - resizeWin.startX) / fit;
-        const dy = (e.clientY - resizeWin.startY) / fit;
-
-        const ur = uiRect();
-        const uw = ur.width / fit;
-        const uh = ur.height / fit;
-
-        const w = resizeWin.win;
-        const minW = parseFloat(getComputedStyle(w).minWidth) || 240;
-        const minH = parseFloat(getComputedStyle(w).minHeight) || 130;
-
-        const scale = getScale();
-        const step = Math.max(6, Math.round(8 * scale));
-
-        const maxW = uw - resizeWin.left - 4;
-        const maxH = uh - resizeWin.top - 4;
-
-        let nw = clamp(resizeWin.origW + dx, minW, maxW);
-        let nh = clamp(resizeWin.origH + dy, minH, maxH);
-
-        nw = snap(nw, step); nh = snap(nh, step);
-
-        w.style.width = nw + "px";
-        w.style.height = nh + "px";
-        return;
-      }
-
-      if(dragWin && e.pointerId === dragWin.pointerId){
-        if(!dragWin.moved){
-          const dist = Math.hypot(e.clientX - dragWin.startX, e.clientY - dragWin.startY);
-          if(dist < DRAG_START_PX) return;
-          dragWin.moved = true;
-        }
-        const fit = dragWin.fit;
-        const dx = (e.clientX - dragWin.startX) / fit;
-        const dy = (e.clientY - dragWin.startY) / fit;
-
-        const w = dragWin.win;
-        const ur = uiRect();
-        const uw = ur.width / fit;
-        const uh = ur.height / fit;
-
-        const bw = w.offsetWidth;
-        const bh = w.offsetHeight;
-
-        const scale = getScale();
-        const step = Math.max(6, Math.round(8 * scale));
-
-        let left = snap(dragWin.origL + dx, step);
-        let top  = snap(dragWin.origT + dy, step);
-
-        left = clamp(left, 4, uw - bw - 4);
-        top  = clamp(top, 4, uh - bh - 4);
-
-        w.style.left = left + "px";
-        w.style.top  = top + "px";
-        return;
-      }
-
-      if(dragIcon && e.pointerId === dragIcon.pointerId){
-        if(!dragIcon.moved){
-          const dist = Math.hypot(e.clientX - dragIcon.startX, e.clientY - dragIcon.startY);
-          if(dist < DRAG_START_PX) return;
-          dragIcon.moved = true;
-        }
-        const fit = dragIcon.fit;
-        const dx = (e.clientX - dragIcon.startX) / fit;
-        const dy = (e.clientY - dragIcon.startY) / fit;
-
-        const icon = dragIcon.icon;
-        const dr = desktopRect();
-        const dw = dr.width / fit;
-        const dh = dr.height / fit;
-
-        const scale = getScale();
-        const step = Math.max(8, Math.round(10 * scale));
-
-        const bw = icon.offsetWidth;
-        const bh = icon.offsetHeight;
-
-        let left = snap(dragIcon.origL + dx, step);
-        let top  = snap(dragIcon.origT + dy, step);
-
-        left = clamp(left, 6, dw - bw - 6);
-        top  = clamp(top, 6, dh - bh - 6);
-
-        icon.style.left = left + "px";
-        icon.style.top  = top  + "px";
-      }
-    }, { passive:false });
-
-    window.addEventListener("pointerup", (e) => {
-      if(resizeWin && e.pointerId === resizeWin.pointerId) resizeWin = null;
-      if(dragWin   && e.pointerId === dragWin.pointerId)   dragWin = null;
-      if(dragIcon  && e.pointerId === dragIcon.pointerId)  dragIcon = null;
-    }, { passive:true });
-
-    window.addEventListener("pointercancel", (e) => {
-      if(resizeWin && e.pointerId === resizeWin.pointerId) resizeWin = null;
-      if(dragWin   && e.pointerId === dragWin.pointerId)   dragWin = null;
-      if(dragIcon  && e.pointerId === dragIcon.pointerId)  dragIcon = null;
-    }, { passive:true });
-
-    $("#finderList").addEventListener("click", (e) => {
-      const item = e.target.closest(".item");
-      if(!item) return;
-      const open = item.getAttribute("data-open");
-      if(open) openThing(open);
-    });
-
-    function openThing(key){
-      switch(key){
-        case "finder": showWin("win-finder"); break;
-        case "note": showWin("win-note"); setTimeout(()=>$("#noteArea")?.focus(), 50); break;
-        case "calc": showWin("win-calc"); break;
-        case "music": showWin("win-music"); break;
-        case "about": showWin("win-about"); break;
-        case "trash": showWin("win-trash"); break;
-        default: beep();
+        gesture = null;
       }
     }
+    if(pointers.size >= 2){
+      // re-init pinch baseline
+      if(shouldHandleViewportGesture()){
+        const [a,b] = [...pointers.values()];
+        const m = mid(a,b);
+        gesture = { mode:"pinch", prevMidX:m.x, prevMidY:m.y, prevDist:Math.max(1,dist(a,b)), prevEff:effFit() };
+      }else{
+        gesture = null;
+      }
+    }
+  }
+  center.addEventListener("pointerup", (e) => endPointer(e.pointerId), { passive:true });
+  center.addEventListener("pointercancel", (e) => endPointer(e.pointerId), { passive:true });
 
-    const menus = {
-      apple: $("#dd-apple"),
-      file: $("#dd-file"),
-      edit: $("#dd-edit"),
-      view: $("#dd-view"),
-      special: $("#dd-special")
-    };
-    function closeMenus(){
-      $$(".menu-item", ui).forEach(m => m.classList.remove("active"));
-      Object.values(menus).forEach(dd => dd.style.display = "none");
-      activeMenu = null;
-      $("#appleBtn").style.background = "";
-      $("#appleBtn").style.color = "";
-    }
-    function openMenu(name, anchorEl){
-      closeMenus();
-      activeMenu = name;
-      if(anchorEl.classList.contains("menu-item")) anchorEl.classList.add("active");
-      if(name === "apple"){ $("#appleBtn").style.background = "#000"; $("#appleBtn").style.color = "#fff"; }
-      const dd = menus[name];
-      if(!dd) return;
-      const sr = stageRect();
-      const r = anchorEl.getBoundingClientRect();
-      const fit = getFit();
-      dd.style.left = Math.max(6, (r.left - sr.left) / fit) + "px";
-      dd.style.display = "block";
-    }
-    $("#appleBtn").addEventListener("click", (e) => {
-      if(activeMenu === "apple"){ closeMenus(); return; }
-      openMenu("apple", e.currentTarget);
+  // ===== Original desktop/window interactions (PC + mobile one-finger) =====
+  let zTop = 50;
+  let frontWin = null;
+  let activeMenu = null;
+
+  function getFit(){ return effFit(); }
+  function getScale(){ return parseFloat(getComputedStyle(ui).getPropertyValue("--scale")) || 1; }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
+  function snap(n, step){ return Math.round(n / step) * step; }
+  function stageRect(){ return stage.getBoundingClientRect(); }
+  function uiRect(){ return ui.getBoundingClientRect(); }
+  function desktopRect(){ return desktop.getBoundingClientRect(); }
+
+  // Clock
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  setInterval(() => {
+    const d = new Date();
+    $("#clock").textContent = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  }, 500);
+
+  function beep(){
+    try{
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "square"; o.frequency.value = 740;
+      g.gain.value = 0.03;
+      o.connect(g); g.connect(ctx.destination);
+      o.start();
+      setTimeout(() => { o.stop(); ctx.close(); }, 90);
+    }catch(e){}
+  }
+
+  function setFront(win){
+    if(!win) return;
+    $$(".window", ui).forEach(w => w.classList.add("inactive"));
+    win.classList.remove("inactive");
+    zTop += 1;
+    win.style.zIndex = zTop;
+    frontWin = win;
+  }
+  function showWin(id){
+    const win = document.getElementById(id);
+    if(!win) return;
+    win.classList.add("visible");
+    setFront(win);
+  }
+  function hideWin(id){
+    const win = document.getElementById(id);
+    if(!win) return;
+    win.classList.remove("visible");
+    if(frontWin === win) frontWin = null;
+    const vis = $$(".window.visible", ui);
+    if(vis.length) setFront(vis[vis.length-1]);
+  }
+
+  // Close buttons
+  $$(".closebox", ui).forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const id = btn.getAttribute("data-close");
+      if(id) hideWin(id);
       e.stopPropagation();
     });
-    $$(".menu-item", ui).forEach(mi => {
-      mi.addEventListener("click", (e) => {
-        const name = mi.getAttribute("data-menu");
-        if(activeMenu === name){ closeMenus(); return; }
-        openMenu(name, mi);
-        e.stopPropagation();
-      });
-    });
-    ui.addEventListener("pointerdown", (e) => {
-      if(e.target.closest(".dropdown") || e.target.closest(".menubar")) return;
-      closeMenus();
-    }, { passive:true });
+  });
 
-    function alertBox(title, msg){
-      $("#alertTitle").textContent = title;
-      $("#alertMsg").textContent = msg;
-      showWin("win-alert");
+  // bring window to front
+  $$(".window", ui).forEach(win => win.addEventListener("pointerdown", () => setFront(win)));
+
+  function clearIconSelection(){ $$(".icon", ui).forEach(i => i.classList.remove("selected")); }
+
+  // Touch open helpers
+  function addTapOpen(el, onOpen){
+    let lastT = 0;
+    el.addEventListener("pointerup", (e) => {
+      if(e.pointerType !== "touch") return;
+      const now = performance.now();
+      if(now - lastT < 320){ onOpen(); lastT = 0; }
+      else lastT = now;
+    });
+  }
+  function addLongPressOpen(el, onOpen){
+    let timer = null;
+    el.addEventListener("pointerdown", (e) => {
+      if(e.pointerType !== "touch") return;
+      timer = setTimeout(() => { onOpen(); }, 450);
+    });
+    el.addEventListener("pointermove", () => { if(timer) clearTimeout(timer); timer=null; });
+    el.addEventListener("pointerup",   () => { if(timer) clearTimeout(timer); timer=null; });
+    el.addEventListener("pointercancel",() => { if(timer) clearTimeout(timer); timer=null; });
+  }
+
+  // Drag states
+  let dragWin = null, resizeWin = null, dragIcon = null;
+  const DRAG_START_PX = 6;
+
+  function onPointerDownTitle(e){
+    const win = e.currentTarget.closest(".window");
+    if(e.target.closest(".closebox")) return;
+    setFront(win);
+
+    const fit = getFit();
+    const ur = uiRect();
+    const rect = win.getBoundingClientRect();
+
+    dragWin = {
+      win,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      origL: (rect.left - ur.left) / fit,
+      origT: (rect.top  - ur.top ) / fit,
+      fit,
+      moved:false
+    };
+
+    win.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  $$(".window .titlebar", ui).forEach(tb => tb.addEventListener("pointerdown", onPointerDownTitle));
+
+  function onPointerDownResize(e){
+    const id = e.currentTarget.getAttribute("data-resize");
+    const win = document.getElementById(id);
+    if(!win) return;
+    setFront(win);
+
+    const fit = getFit();
+    const ur = uiRect();
+    const rect = win.getBoundingClientRect();
+
+    resizeWin = {
+      win,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      origW: rect.width / fit,
+      origH: rect.height / fit,
+      left: (rect.left - ur.left) / fit,
+      top:  (rect.top  - ur.top ) / fit,
+      fit
+    };
+
+    win.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+    e.stopPropagation();
+  }
+  $$(".resize-handle", ui).forEach(h => h.addEventListener("pointerdown", onPointerDownResize));
+
+  function onPointerDownIcon(e){
+    const icon = e.currentTarget;
+    clearIconSelection();
+    icon.classList.add("selected");
+
+    const fit = getFit();
+    const dr = desktopRect();
+    const rect = icon.getBoundingClientRect();
+
+    dragIcon = {
+      icon,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      origL: (rect.left - dr.left) / fit,
+      origT: (rect.top  - dr.top ) / fit,
+      fit,
+      moved:false
+    };
+
+    icon.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  $$(".icon", ui).forEach(icon => {
+    icon.addEventListener("pointerdown", onPointerDownIcon);
+    icon.addEventListener("dblclick", () => {
+      const open = icon.getAttribute("data-open");
+      if(open) openThing(open);
+    });
+    addTapOpen(icon, () => { const open = icon.getAttribute("data-open"); if(open) openThing(open); });
+    addLongPressOpen(icon, () => { const open = icon.getAttribute("data-open"); if(open) openThing(open); });
+  });
+
+  desktop.addEventListener("pointerdown", (e) => {
+    if(!e.target.closest(".icon") && !e.target.closest(".window")){
+      clearIconSelection();
+      closeMenus();
+    }
+  });
+
+  window.addEventListener("pointermove", (e) => {
+    if(resizeWin && e.pointerId === resizeWin.pointerId){
+      const fit = resizeWin.fit;
+      const dx = (e.clientX - resizeWin.startX) / fit;
+      const dy = (e.clientY - resizeWin.startY) / fit;
+
+      const ur = uiRect();
+      const uw = ur.width / fit;
+      const uh = ur.height / fit;
+
+      const w = resizeWin.win;
+      const minW = parseFloat(getComputedStyle(w).minWidth) || 240;
+      const minH = parseFloat(getComputedStyle(w).minHeight) || 130;
+
+      const scale = getScale();
+      const step = Math.max(6, Math.round(8 * scale));
+
+      const maxW = uw - resizeWin.left - 4;
+      const maxH = uh - resizeWin.top - 4;
+
+      let nw = clamp(resizeWin.origW + dx, minW, maxW);
+      let nh = clamp(resizeWin.origH + dy, minH, maxH);
+
+      nw = snap(nw, step);
+      nh = snap(nh, step);
+
+      w.style.width = nw + "px";
+      w.style.height = nh + "px";
+      return;
     }
 
-    // Clean up desktop (kept)
-    function cleanUpDesktop(){
-      const fit = getFit();
+    if(dragWin && e.pointerId === dragWin.pointerId){
+      if(!dragWin.moved){
+        const dist = Math.hypot(e.clientX - dragWin.startX, e.clientY - dragWin.startY);
+        if(dist < DRAG_START_PX) return;
+        dragWin.moved = true;
+      }
+
+      const fit = dragWin.fit;
+      const dx = (e.clientX - dragWin.startX) / fit;
+      const dy = (e.clientY - dragWin.startY) / fit;
+
+      const w = dragWin.win;
+
+      const ur = uiRect();
+      const uw = ur.width / fit;
+      const uh = ur.height / fit;
+
+      const bw = w.offsetWidth;
+      const bh = w.offsetHeight;
+
+      const scale = getScale();
+      const step = Math.max(6, Math.round(8 * scale));
+
+      let left = snap(dragWin.origL + dx, step);
+      let top  = snap(dragWin.origT + dy, step);
+
+      left = clamp(left, 4, uw - bw - 4);
+      top  = clamp(top, 4, uh - bh - 4);
+
+      w.style.left = left + "px";
+      w.style.top  = top  + "px";
+      return;
+    }
+
+    if(dragIcon && e.pointerId === dragIcon.pointerId){
+      if(!dragIcon.moved){
+        const dist = Math.hypot(e.clientX - dragIcon.startX, e.clientY - dragIcon.startY);
+        if(dist < DRAG_START_PX) return;
+        dragIcon.moved = true;
+      }
+
+      const fit = dragIcon.fit;
+      const dx = (e.clientX - dragIcon.startX) / fit;
+      const dy = (e.clientY - dragIcon.startY) / fit;
+
+      const icon = dragIcon.icon;
+
       const dr = desktopRect();
       const dw = dr.width / fit;
       const dh = dr.height / fit;
+
       const scale = getScale();
-      const icons = $$(".icon", ui);
-      const trash = $("#icon-trash");
-      icons.forEach(i => { i.style.right = "auto"; });
+      const step = Math.max(8, Math.round(10 * scale));
 
-      const margin = Math.round(12 * scale);
-      const colW   = Math.round(92 * scale);
-      const rowH   = Math.round(96 * scale);
-      const iconW  = Math.round(76 * scale);
-      const iconH  = Math.round(80 * scale);
+      const bw = icon.offsetWidth;
+      const bh = icon.offsetHeight;
 
-      if(trash){
-        trash.style.left = (dw - iconW - margin) + "px";
-        trash.style.top  = margin + "px";
-      }
-      let x = margin, y = margin;
-      icons.filter(i => i !== trash).sort((a,b)=>a.id.localeCompare(b.id)).forEach(icon=>{
+      let left = snap(dragIcon.origL + dx, step);
+      let top  = snap(dragIcon.origT + dy, step);
+
+      left = clamp(left, 6, dw - bw - 6);
+      top  = clamp(top, 6, dh - bh - 6);
+
+      icon.style.left = left + "px";
+      icon.style.top  = top  + "px";
+    }
+  }, { passive:false });
+
+  window.addEventListener("pointerup", (e) => {
+    if(resizeWin && e.pointerId === resizeWin.pointerId) resizeWin = null;
+    if(dragWin   && e.pointerId === dragWin.pointerId)   dragWin = null;
+    if(dragIcon  && e.pointerId === dragIcon.pointerId)  dragIcon = null;
+  });
+
+  window.addEventListener("pointercancel", (e) => {
+    if(resizeWin && e.pointerId === resizeWin.pointerId) resizeWin = null;
+    if(dragWin   && e.pointerId === dragWin.pointerId)   dragWin = null;
+    if(dragIcon  && e.pointerId === dragIcon.pointerId)  dragIcon = null;
+  });
+
+  // Finder list
+  $("#finderList").addEventListener("click", (e) => {
+    const item = e.target.closest(".item");
+    if(!item) return;
+    const open = item.getAttribute("data-open");
+    if(open) openThing(open);
+  });
+
+  function openThing(key){
+    switch(key){
+      case "finder": showWin("win-finder"); break;
+      case "note": showWin("win-note"); setTimeout(()=>$("#noteArea")?.focus(), 50); break;
+      case "calc": showWin("win-calc"); break;
+      case "music": showWin("win-music"); break;
+      case "about": showWin("win-about"); break;
+      case "trash": showWin("win-trash"); break;
+      default: beep();
+    }
+  }
+
+  // Menus
+  const menus = {
+    apple: $("#dd-apple"),
+    file: $("#dd-file"),
+    edit: $("#dd-edit"),
+    view: $("#dd-view"),
+    special: $("#dd-special")
+  };
+
+  function closeMenus(){
+    $$(".menu-item", ui).forEach(m => m.classList.remove("active"));
+    Object.values(menus).forEach(dd => dd.style.display = "none");
+    activeMenu = null;
+    $("#appleBtn").style.background = "";
+    $("#appleBtn").style.color = "";
+  }
+
+  function openMenu(name, anchorEl){
+    closeMenus();
+    activeMenu = name;
+
+    if(anchorEl.classList.contains("menu-item")) anchorEl.classList.add("active");
+    if(name === "apple"){
+      $("#appleBtn").style.background = "#000";
+      $("#appleBtn").style.color = "#fff";
+    }
+
+    const dd = menus[name];
+    if(!dd) return;
+
+    const sr = stageRect();
+    const r = anchorEl.getBoundingClientRect();
+    const fit = getFit();
+
+    dd.style.left = Math.max(6, (r.left - sr.left) / fit) + "px";
+    dd.style.display = "block";
+  }
+
+  $("#appleBtn").addEventListener("click", (e) => {
+    if(activeMenu === "apple"){ closeMenus(); return; }
+    openMenu("apple", e.currentTarget);
+    e.stopPropagation();
+  });
+
+  $$(".menu-item", ui).forEach(mi => {
+    mi.addEventListener("click", (e) => {
+      const name = mi.getAttribute("data-menu");
+      if(activeMenu === name){ closeMenus(); return; }
+      openMenu(name, mi);
+      e.stopPropagation();
+    });
+  });
+
+  ui.addEventListener("pointerdown", (e) => {
+    if(e.target.closest(".dropdown") || e.target.closest(".menubar")) return;
+    closeMenus();
+  });
+
+  // Dropdown actions
+  function alertBox(title, msg){
+    $("#alertTitle").textContent = title;
+    $("#alertMsg").textContent = msg;
+    showWin("win-alert");
+  }
+
+  function cleanUpDesktop(){
+    const fit = getFit();
+    const dr = desktopRect();
+    const dw = dr.width / fit;
+    const dh = dr.height / fit;
+
+    const scale = getScale();
+    const icons = $$(".icon", ui);
+    const trash = $("#icon-trash");
+
+    const margin = Math.round(12 * scale);
+    const colW   = Math.round(92 * scale);
+    const rowH   = Math.round(96 * scale);
+    const iconW  = Math.round(76 * scale);
+    const iconH  = Math.round(80 * scale);
+
+    if(trash){
+      trash.style.left = (dw - iconW - margin) + "px";
+      trash.style.top  = margin + "px";
+    }
+
+    let x = margin, y = margin;
+
+    icons
+      .filter(i => i !== trash)
+      .sort((a,b) => a.id.localeCompare(b.id))
+      .forEach(icon => {
         icon.style.left = x + "px";
         icon.style.top  = y + "px";
         y += rowH;
         if(y + iconH > dh - margin){ y = margin; x += colW; }
         if(x + iconW > dw - margin){ x = margin; }
       });
-      beep();
+
+    beep();
+  }
+
+  function applyAction(act){
+    switch(act){
+      case "about": showWin("win-about"); break;
+      case "openFinder": showWin("win-finder"); break;
+      case "openNote": showWin("win-note"); setTimeout(()=>$("#noteArea")?.focus(), 50); break;
+      case "openCalc": showWin("win-calc"); break;
+      case "openMusic": showWin("win-music"); break;
+      case "cleanup": cleanUpDesktop(); break;
+
+      case "recenter": resetViewToInitial(); break;
+
+      case "scaleNormal": document.body.classList.remove("big","huge"); break;
+      case "scaleBig": document.body.classList.remove("huge"); document.body.classList.add("big"); break;
+      case "scaleHuge": document.body.classList.remove("big"); document.body.classList.add("huge"); break;
+
+      case "closeFront": if(frontWin) hideWin(frontWin.id); else beep(); break;
+      default: beep();
     }
+  }
 
-    function applyAction(act){
-      switch(act){
-        case "about": showWin("win-about"); break;
-        case "openFinder": showWin("win-finder"); break;
-        case "openNote": showWin("win-note"); setTimeout(()=>$("#noteArea")?.focus(), 50); break;
-        case "openCalc": showWin("win-calc"); break;
-        case "openMusic": showWin("win-music"); break;
-        case "cleanup": cleanUpDesktop(); break;
-
-        case "scaleNormal": document.body.classList.remove("big","huge"); break;
-        case "scaleBig": document.body.classList.remove("huge"); document.body.classList.add("big"); break;
-        case "scaleHuge": document.body.classList.remove("big"); document.body.classList.add("huge"); break;
-
-        default: beep();
+  $$(".dropdown", ui).forEach(dd => {
+    dd.addEventListener("click", (e) => {
+      const row = e.target.closest(".row");
+      if(!row) return;
+      const act = row.getAttribute("data-action");
+      if(act && act !== "sep"){
+        applyAction(act);
+        closeMenus();
       }
-    }
-    $$(".dropdown", ui).forEach(dd => {
-      dd.addEventListener("click", (e) => {
-        const row = e.target.closest(".row");
-        if(!row) return;
-        const act = row.getAttribute("data-action");
-        if(act && act !== "sep"){
-          applyAction(act);
-          closeMenus();
-        }
-      });
     });
+  });
 
-    // Calculator (simple)
-    const calcDisplay = $("#calcDisplay");
-    let calcState = { display: "0", first: null, op: null, waiting: false };
-    function calcRender(){ const s = calcState.display; calcDisplay.textContent = (s.length > 14) ? s.slice(0, 14) : s; }
-    function calcClear(){ calcState = { display:"0", first:null, op:null, waiting:false }; calcRender(); }
-    function calcInputDigit(d){ if(calcState.waiting){ calcState.display = d; calcState.waiting=false; } else calcState.display = (calcState.display==="0")?d:(calcState.display+d); calcRender(); }
-    function calcInputDot(){ if(calcState.waiting){ calcState.display="0."; calcState.waiting=false; calcRender(); return;} if(!calcState.display.includes(".")){ calcState.display+="."; calcRender(); } }
-    function calcCompute(a,b,op){ if(op==="+") return a+b; if(op==="-") return a-b; if(op==="*") return a*b; if(op==="/") return (b===0)?NaN:(a/b); return b; }
-    function calcOperator(nextOp){
-      const input = parseFloat(calcState.display);
-      if(calcState.first == null) calcState.first = input;
-      else if(calcState.op && !calcState.waiting){
-        const result = calcCompute(calcState.first, input, calcState.op);
-        calcState.first = result;
-        calcState.display = Number.isFinite(result) ? String(result) : "Error";
-      }
-      calcState.op = nextOp; calcState.waiting = true; calcRender();
-    }
-    function calcEquals(){
-      const input = parseFloat(calcState.display);
-      if(calcState.op==null || calcState.first==null || calcState.waiting) return;
-      const result = calcCompute(calcState.first, input, calcState.op);
-      calcState.display = Number.isFinite(result) ? String(result) : "Error";
-      calcState.first=null; calcState.op=null; calcState.waiting=true; calcRender();
-    }
-    function calcPress(k){
-      if(k>="0" && k<="9") return calcInputDigit(k);
-      if(k===".") return calcInputDot();
-      if(k==="C") return calcClear();
-      if(k==="+"||k==="-"||k==="*"||k==="/") return calcOperator(k);
-      if(k==="=") return calcEquals();
-    }
-    $("#win-calc").addEventListener("click", (e)=>{ const b=e.target.closest(".key"); if(!b) return; const k=b.getAttribute("data-k"); if(k==="BS") return; if(k==="%") return; if(k) calcPress(k.replace("÷","/").replace("×","*")); });
+  // Calculator
+  const calcDisplay = $("#calcDisplay");
+  let calcState = { display: "0", first: null, op: null, waiting: false };
+  function calcRender(){
+    const s = calcState.display;
+    calcDisplay.textContent = (s.length > 14) ? s.slice(0, 14) : s;
+  }
+  function calcClear(){ calcState = { display:"0", first:null, op:null, waiting:false }; calcRender(); }
+  function calcBackspace(){
+    if(calcState.waiting) return;
+    const s = calcState.display;
+    calcState.display = (s.length <= 1) ? "0" : s.slice(0,-1);
     calcRender();
-
-    // Music
-    const music = {
-      audio: new Audio("song.mp3"),
-      seek: $("#musicSeek"),
-      state: $("#musicState"),
-      time: $("#musicTime"),
-      dur: $("#musicDur"),
-      status: $("#musicStatus"),
-      seeking:false
-    };
-    music.audio.preload = "metadata";
-    function fmtTime(sec){
-      if(!Number.isFinite(sec) || sec < 0) return "0:00";
-      const m = Math.floor(sec/60), s=Math.floor(sec%60);
-      return `${m}:${String(s).padStart(2,"0")}`;
+  }
+  function calcInputDigit(d){
+    if(calcState.waiting){ calcState.display = d; calcState.waiting = false; }
+    else calcState.display = (calcState.display === "0") ? d : (calcState.display + d);
+    calcRender();
+  }
+  function calcInputDot(){
+    if(calcState.waiting){ calcState.display = "0."; calcState.waiting = false; calcRender(); return; }
+    if(!calcState.display.includes(".")){ calcState.display += "."; calcRender(); }
+  }
+  function calcCompute(a,b,op){
+    if(op === "+") return a + b;
+    if(op === "-") return a - b;
+    if(op === "*") return a * b;
+    if(op === "/") return (b === 0) ? NaN : (a / b);
+    return b;
+  }
+  function calcOperator(nextOp){
+    const input = parseFloat(calcState.display);
+    if(calcState.first == null) calcState.first = input;
+    else if(calcState.op && !calcState.waiting){
+      const result = calcCompute(calcState.first, input, calcState.op);
+      calcState.first = result;
+      calcState.display = Number.isFinite(result) ? String(result) : "Error";
     }
-    function syncMusic(){
-      const a=music.audio;
-      const d=Number.isFinite(a.duration)?a.duration:0;
-      if(!music.seeking){
-        music.seek.max=String(d||0);
-        music.seek.value=String(a.currentTime||0);
-      }
-      music.time.textContent=fmtTime(a.currentTime||0);
-      music.dur.textContent=fmtTime(d||0);
-      music.state.textContent=a.paused?"STOP":"PLAY";
+    calcState.op = nextOp;
+    calcState.waiting = true;
+    calcRender();
+  }
+  function calcEquals(){
+    const input = parseFloat(calcState.display);
+    if(calcState.op == null || calcState.first == null || calcState.waiting) return;
+    const result = calcCompute(calcState.first, input, calcState.op);
+    calcState.display = Number.isFinite(result) ? String(result) : "Error";
+    calcState.first = null; calcState.op = null; calcState.waiting = true;
+    calcRender();
+  }
+  function calcPercent(){
+    const v = parseFloat(calcState.display);
+    if(!Number.isFinite(v)) return;
+    calcState.display = String(v / 100);
+    calcRender();
+  }
+  function calcPress(k){
+    if(k >= "0" && k <= "9") return calcInputDigit(k);
+    if(k === ".") return calcInputDot();
+    if(k === "C") return calcClear();
+    if(k === "BS") return calcBackspace();
+    if(k === "%") return calcPercent();
+    if(k === "+" || k === "-" || k === "*" || k === "/") return calcOperator(k);
+    if(k === "=") return calcEquals();
+  }
+  $("#win-calc").addEventListener("click", (e) => {
+    const btn = e.target.closest(".key");
+    if(!btn) return;
+    const k = btn.getAttribute("data-k");
+    if(k) calcPress(k);
+  });
+  calcRender();
+
+  // Music
+  const music = {
+    audio: new Audio("song.mp3"),
+    seek: $("#musicSeek"),
+    state: $("#musicState"),
+    time: $("#musicTime"),
+    dur: $("#musicDur"),
+    status: $("#musicStatus"),
+    seeking: false
+  };
+  music.audio.preload = "metadata";
+  function fmtTime(sec){
+    if(!Number.isFinite(sec) || sec < 0) return "0:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2,"0")}`;
+  }
+  function syncMusicUI(){
+    const a = music.audio;
+    const d = Number.isFinite(a.duration) ? a.duration : 0;
+    if(!music.seeking){
+      music.seek.max = String(d || 0);
+      music.seek.value = String(a.currentTime || 0);
     }
-    music.audio.addEventListener("loadedmetadata", ()=>{ music.status.textContent="Loaded"; syncMusic(); });
-    music.audio.addEventListener("timeupdate", syncMusic);
-    music.audio.addEventListener("play", ()=>{ music.status.textContent="Playing"; syncMusic(); });
-    music.audio.addEventListener("pause", ()=>{ music.status.textContent="Paused"; syncMusic(); });
-    music.audio.addEventListener("error", ()=>{ music.status.textContent="Cannot load song.mp3"; alertBox("Music Player","无法加载 song.mp3，请确认同目录。"); });
+    $("#musicTime").textContent = fmtTime(a.currentTime || 0);
+    $("#musicDur").textContent = fmtTime(d || 0);
+    $("#musicState").textContent = a.paused ? "STOP" : "PLAY";
+  }
+  music.audio.addEventListener("loadedmetadata", () => { music.status.textContent = "Loaded"; syncMusicUI(); });
+  music.audio.addEventListener("timeupdate", syncMusicUI);
+  music.audio.addEventListener("play", () => { music.status.textContent = "Playing"; syncMusicUI(); });
+  music.audio.addEventListener("pause", () => { music.status.textContent = "Paused"; syncMusicUI(); });
+  music.audio.addEventListener("error", () => {
+    music.status.textContent = "Cannot load song.mp3";
+    alertBox("Music Player", "无法加载 song.mp3。请确认它与本 HTML 同目录，并已正确上传。");
+  });
 
-    document.getElementById("musicPlay").addEventListener("click", async ()=>{
-      try{ await music.audio.play(); }catch(e){ alertBox("Music Player","浏览器阻止播放：请再点一次 Play。"); }
-    });
-    document.getElementById("musicPause").addEventListener("click", ()=>music.audio.pause());
-    music.seek.addEventListener("input", ()=>{ music.seeking=true; const t=parseFloat(music.seek.value); if(Number.isFinite(t)) music.audio.currentTime=t; syncMusic(); });
-    music.seek.addEventListener("change", ()=>{ music.seeking=false; syncMusic(); });
+  async function musicPlay(){
+    try{ await music.audio.play(); }
+    catch(err){
+      music.status.textContent = "Playback blocked";
+      alertBox("Music Player", "浏览器阻止了播放（需要用户手势）。请点击 Play 再试。");
+    }
+  }
+  $("#musicPlay").addEventListener("click", musicPlay);
+  $("#musicPause").addEventListener("click", () => music.audio.pause());
+  music.seek.addEventListener("input", () => {
+    music.seeking = true;
+    const t = parseFloat(music.seek.value);
+    if(Number.isFinite(t)) music.audio.currentTime = t;
+    syncMusicUI();
+  });
+  music.seek.addEventListener("change", () => {
+    music.seeking = false;
+    syncMusicUI();
+  });
 
-    // Init
-    resetView();
-    showWin("win-finder"); setFront(document.getElementById("win-finder"));
-    syncMusic();
-  </script>
+  // Init
+  resetViewToInitial();
+  showWin("win-finder");
+  setFront($("#win-finder"));
+  syncMusicUI();
+</script>
 </body>
 </html>
