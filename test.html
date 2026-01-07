@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Test Page / 部署测试页</title>
+  <meta name="description" content="用于测试部署、HTTPS、中文字体、响应式布局与交互的单页HTML" />
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+    }
+    header {
+      padding: 24px 16px;
+      border-bottom: 1px solid rgba(128,128,128,.3);
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(8px);
+    }
+    @media (prefers-color-scheme: dark) {
+      header { background: rgba(0,0,0,.6); }
+    }
+    main { max-width: 920px; margin: 0 auto; padding: 16px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 860px) { .grid { grid-template-columns: 1.2fr .8fr; } }
+    .card {
+      border: 1px solid rgba(128,128,128,.3);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .btn {
+      border: 1px solid rgba(128,128,128,.5);
+      background: transparent;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .btn:hover { filter: brightness(1.05); }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    pre {
+      overflow: auto;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(128,128,128,.3);
+    }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 10px; }
+    th, td { padding: 10px; border-bottom: 1px solid rgba(128,128,128,.25); text-align: left; }
+    th { font-weight: 650; }
+    .muted { opacity: .75; }
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; border: 1px solid rgba(128,128,128,.4); }
+    .hr { height: 1px; background: rgba(128,128,128,.25); margin: 16px 0; }
+    footer { padding: 24px 16px; border-top: 1px solid rgba(128,128,128,.3); text-align: center; }
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(128,128,128,.35);
+      background: rgba(0,0,0,.75);
+      color: white;
+      display: none;
+      max-width: min(420px, calc(100vw - 32px));
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="row" style="justify-content: space-between;">
+      <div>
+        <div style="font-size: 18px; font-weight: 750;">部署测试页 ✅</div>
+        <div class="muted" style="font-size: 13px;">用于测试静态站点、DNS、HTTPS、缓存与中文渲染</div>
+      </div>
+      <div class="row">
+        <span class="pill" id="protocolPill">协议：?</span>
+        <span class="pill" id="timePill">时间：?</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section class="card">
+        <h2 style="margin-top: 0;">基础检查</h2>
+        <ul>
+          <li>当前 URL：<code id="urlText">-</code></li>
+          <li>Host：<code id="hostText">-</code></li>
+          <li>User-Agent：<code id="uaText">-</code></li>
+          <li>语言：<code id="langText">-</code></li>
+        </ul>
+
+        <div class="hr"></div>
+
+        <h3>交互测试</h3>
+        <div class="row">
+          <button class="btn" id="btnToast">弹个提示</button>
+          <button class="btn" id="btnCopy">复制一段文本</button>
+          <button class="btn" id="btnFetch">Fetch /api/ping（可选）</button>
+        </div>
+        <p class="muted" id="fetchResult" style="margin-bottom: 0;"></p>
+
+        <div class="hr"></div>
+
+        <h3>表单与输入</h3>
+        <form id="testForm">
+          <div class="row">
+            <label>姓名：
+              <input name="name" placeholder="fox chen" required />
+            </label>
+            <label>邮箱：
+              <input name="email" type="email" placeholder="name@example.com" />
+            </label>
+          </div>
+
+          <div style="margin-top: 10px;">
+            <label>留言：</label><br />
+            <textarea name="msg" rows="4" style="width: 100%;" placeholder="测试中文、换行、表情符号🙂"></textarea>
+          </div>
+
+          <div class="row" style="margin-top: 10px;">
+            <label><input type="checkbox" name="agree" /> 我同意这只是测试</label>
+            <button class="btn" type="submit">提交（本地拦截）</button>
+          </div>
+        </form>
+
+        <div class="hr"></div>
+
+        <h3>代码块（测试等宽字体/滚动）</h3>
+        <pre><code># Nginx 示例（仅用于测试展示）
+server {
+  listen 80;
+  server_name example.com www.example.com;
+
+  root /var/www/site;
+  index index.html;
+
+  location / {
+    try_files $uri $uri/ =404;
+  }
+}</code></pre>
+      </section>
+
+      <aside class="card">
+        <h2 style="margin-top: 0;">布局/资源测试</h2>
+
+        <h3>表格</h3>
+        <table>
+          <thead>
+            <tr><th>项目</th><th>状态</th><th>备注</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>DNS 解析</td><td>待检查</td><td class="muted">A / CNAME 是否正确</td></tr>
+            <tr><td>HTTPS</td><td>待检查</td><td class="muted">证书是否自动签发</td></tr>
+            <tr><td>缓存</td><td>待检查</td><td class="muted">刷新是否更新</td></tr>
+          </tbody>
+        </table>
+
+        <div class="hr"></div>
+
+        <h3>进度条</h3>
+        <label class="muted">模拟加载：</label>
+        <progress id="prog" value="25" max="100" style="width: 100%;"></progress>
+        <div class="row" style="margin-top: 8px;">
+          <button class="btn" id="btnProg">增加 10%</button>
+          <span class="muted" id="progText">25%</span>
+        </div>
+
+        <div class="hr"></div>
+
+        <h3>图片占位（不依赖外网）</h3>
+        <svg viewBox="0 0 800 450" width="100%" style="border-radius: 12px; border: 1px solid rgba(128,128,128,.3);">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1">
+              <stop offset="0" stop-color="rgba(128,128,128,.15)"/>
+              <stop offset="1" stop-color="rgba(128,128,128,.35)"/>
+            </linearGradient>
+          </defs>
+          <rect width="800" height="450" fill="url(#g)"></rect>
+          <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle"
+                font-size="32" fill="rgba(255,255,255,.85)">SVG Placeholder</text>
+          <text x="50%" y="58%" text-anchor="middle" dominant-baseline="middle"
+                font-size="16" fill="rgba(255,255,255,.75)">用于测试图片渲染与自适应</text>
+        </svg>
+      </aside>
+    </div>
+
+    <div class="card" style="margin-top: 16px;">
+      <h2 style="margin-top: 0;">长文本滚动测试</h2>
+      <p class="muted">
+        下面这段用于测试：中文换行、段落间距、移动端滚动、粘性头部遮挡等。
+      </p>
+      <p>
+        火星的风带着细碎的尘沙，贴着地表滑行。你可以把这段当作占位内容：在不同屏幕宽度下，
+        观察行宽、字距、标点挤压是否舒服；也可以测试浏览器的页面缩放、深色模式、以及缓存刷新。
+      </p>
+      <p>
+        如果你在做反向代理或 CDN，请多次刷新并打开开发者工具观察：是否命中缓存、响应头是否正确、
+        静态资源是否被压缩（gzip/brotli）、以及是否有 mixed content（HTTPS 下加载 HTTP 资源）。
+      </p>
+    </div>
+  </main>
+
+  <footer class="muted">
+    <div>© <span id="yearText"></span> Test Page</div>
+    <div style="font-size: 12px;">提示：如果你需要测试后端，把 <code>/api/ping</code> 路由在服务器上返回 JSON 就行。</div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function showToast(msg) {
+      const t = $("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => (t.style.display = "none"), 2400);
+    }
+
+    // 基础信息
+    $("urlText").textContent = location.href;
+    $("hostText").textContent = location.host || "(file:// 本地打开)";
+    $("uaText").textContent = navigator.userAgent;
+    $("langText").textContent = navigator.language;
+    $("protocolPill").textContent = "协议：" + location.protocol.replace(":", "").toUpperCase();
+    $("timePill").textContent = "时间：" + new Date().toLocaleString();
+    $("yearText").textContent = new Date().getFullYear();
+
+    // Toast
+    $("btnToast").addEventListener("click", () => {
+      showToast("提示：页面 JS 正常运行 ✅ " + new Date().toLocaleTimeString());
+    });
+
+    // Copy
+    $("btnCopy").addEventListener("click", async () => {
+      const text = "Hello from test.html — 复制成功 ✅";
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("已复制到剪贴板： " + text);
+      } catch (e) {
+        showToast("复制失败（可能非 HTTPS 或权限限制），请手动复制： " + text);
+      }
+    });
+
+    // Progress
+    $("btnProg").addEventListener("click", () => {
+      const p = $("prog");
+      p.value = Math.min(100, Number(p.value) + 10);
+      $("progText").textContent = p.value + "%";
+      if (p.value === 100) showToast("进度条到 100% ✅");
+    });
+
+    // Form
+    $("testForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const obj = Object.fromEntries(fd.entries());
+      obj.agree = fd.get("agree") === "on";
+      showToast("表单已拦截（未提交到服务器）。数据：" + JSON.stringify(obj));
+      console.log("FormData:", obj);
+    });
+
+    // Fetch optional
+    $("btnFetch").addEventListener("click", async () => {
+      $("fetchResult").textContent = "请求中...";
+      try {
+        const r = await fetch("/api/ping", { cache: "no-store" });
+        const txt = await r.text();
+        $("fetchResult").textContent = "状态 " + r.status + "：" + txt.slice(0, 200);
+        showToast("Fetch 完成 ✅（看右侧/控制台）");
+      } catch (e) {
+        $("fetchResult").textContent = "请求失败：你可能没有后端 /api/ping（这是正常的）";
+        showToast("Fetch 失败（但页面正常）");
+      }
+    });
+  </script>
+</body>
+</html>
