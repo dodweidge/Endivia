@@ -3,19 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Macintosh (System 1) Mock · Centered</title>
+  <title>Macintosh (System 1) Mock · Pixel + Apps</title>
   <style>
     :root{
-      /* 逻辑尺寸（固定）——界面就是这块大小 */
+      /* 固定“屏幕”逻辑尺寸（中间那块） */
       --stageW: 900; /* px */
       --stageH: 640; /* px */
       --fit: 1;
 
-      --scale: 1.0;                 /* UI 缩放（由 fit * scale 最终决定） */
+      /* UI 缩放（可切换 Normal/Big/Huge） */
+      --scale: 1.0;
       --ui: 12px;
       --barH: calc(22px * var(--scale));
       --winBorder: 2px;
 
+      /* 1-bit 黑白 */
       --bw:#000;
       --paper:#fff;
       --desk1:#e9e9e9;
@@ -30,17 +32,23 @@
     body{
       margin:0;
       overflow:hidden;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      color: var(--bw);
 
-      /* 复古像素背景：点阵 + 斜向条纹 + 暗角 */
+      /* 像素背景：点阵 + 斜纹 + 暗角 + 轻微彩噪 */
       background:
-        radial-gradient(1200px 800px at 50% 40%, rgba(255,255,255,.10), transparent 55%),
-        radial-gradient(900px 600px at 20% 70%, rgba(255,255,255,.06), transparent 60%),
-        linear-gradient(180deg, rgba(0,0,0,.20), transparent 20%, transparent 80%, rgba(0,0,0,.35)),
-        repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 6px, rgba(0,0,0,.04) 6px 12px),
+        radial-gradient(1200px 800px at 50% 40%, rgba(255,255,255,.12), transparent 55%),
+        radial-gradient(900px 600px at 20% 70%, rgba(255,255,255,.08), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.18), transparent 20%, transparent 80%, rgba(0,0,0,.35)),
+        repeating-linear-gradient(45deg, rgba(255,255,255,.06) 0 6px, rgba(0,0,0,.04) 6px 12px),
         radial-gradient(circle, rgba(0,0,0,.14) 1px, transparent 1px);
       background-size: auto, auto, auto, auto, 6px 6px;
+
+      /* “像素字体感”：关平滑 + 速度渲染（不同浏览器效果不同，但会更硬朗） */
+      font-family: "MS Gothic", "SimSun", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      -webkit-font-smoothing: none;
+      -moz-osx-font-smoothing: auto;
+      text-rendering: optimizeSpeed;
+
+      color: #fff;
     }
 
     /* 居中舞台 */
@@ -51,45 +59,66 @@
       place-items:center;
       padding: 24px;
     }
-
     .stageWrap{
       transform: scale(var(--fit));
       transform-origin: center;
-      filter: drop-shadow(0 26px 0 rgba(0,0,0,.35)) drop-shadow(0 18px 38px rgba(0,0,0,.35));
+      filter:
+        drop-shadow(0 26px 0 rgba(0,0,0,.35))
+        drop-shadow(0 18px 38px rgba(0,0,0,.35));
     }
-
     .stage{
       width: calc(var(--stageW) * 1px);
       height: calc(var(--stageH) * 1px);
       position: relative;
       overflow: hidden;
 
-      /* “显示器边框” */
-      border: 4px solid #000;
+      /* 显示器边框 */
+      border: 5px solid #000;
       background: #fff;
+
+      /* 略微“老显示器”对比 */
+      filter: contrast(1.06);
     }
 
-    /* 屏幕轻微像素化/扫描线感 */
+    /* CRT/像素扫描感 + 更强 dither 强化 */
     .stage::after{
       content:"";
       position:absolute; inset:0;
       pointer-events:none;
       background:
-        repeating-linear-gradient(to bottom, rgba(0,0,0,.06) 0 1px, transparent 1px 3px),
-        radial-gradient(900px 600px at 50% 45%, rgba(0,0,0,.18), transparent 60%);
-      opacity:.35;
+        /* 扫描线 */
+        repeating-linear-gradient(to bottom, rgba(0,0,0,.07) 0 1px, transparent 1px 3px),
+        /* 更强的点阵抖动 */
+        radial-gradient(circle, rgba(0,0,0,.12) 1px, transparent 1px),
+        /* 暗角 */
+        radial-gradient(900px 600px at 50% 45%, rgba(0,0,0,.20), transparent 60%);
+      background-size: auto, 4px 4px, auto;
+      opacity:.55;
       mix-blend-mode:multiply;
     }
 
-    /* ====== UI Inside Stage (System 1-ish) ====== */
-
+    /* ====== UI Inside Stage ====== */
     .ui{
       position:absolute; inset:0;
       background:
         repeating-linear-gradient(45deg, var(--desk1) 0 2px, var(--desk2) 2px 4px);
       user-select: none;
+      color: var(--bw);
+    }
+    /* 强化 1-bit / dither 的“前景噪点” */
+    .ui::before{
+      content:"";
+      position:absolute; inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle, rgba(0,0,0,.10) 1px, transparent 1px),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.04) 0 1px, transparent 1px 6px);
+      background-size: 6px 6px, 7px 7px;
+      opacity:.16;
+      mix-blend-mode:multiply;
     }
 
+    /* Menu bar */
     .menubar{
       position: absolute;
       left:0; right:0; top:0;
@@ -124,10 +153,11 @@
     }
     .menu-item.active{ background: var(--bw); color: var(--paper); }
 
+    /* Dropdown */
     .dropdown{
       position: absolute;
       top: calc(var(--barH) - 1px);
-      min-width: calc(200px * var(--scale));
+      min-width: calc(220px * var(--scale));
       background: var(--paper);
       border: var(--winBorder) solid var(--bw);
       box-shadow: 0 calc(8px * var(--scale)) 0 var(--shadow);
@@ -148,6 +178,7 @@
     .kbd{ opacity:.75; margin-left: calc(12px * var(--scale)); }
     .muted{ opacity:.7; }
 
+    /* Desktop */
     .desktop{
       position:absolute;
       left:0; right:0;
@@ -162,6 +193,7 @@
       width: calc(76px * var(--scale));
       text-align:center;
       cursor: default;
+      touch-action: none;
     }
     .icon .glyph{
       width: calc(36px * var(--scale));
@@ -191,9 +223,11 @@
       min-width: calc(240px * var(--scale));
       min-height: calc(130px * var(--scale));
       display:none;
+      touch-action:none;
     }
     .window.visible{ display:block; }
     .window.inactive{ opacity:.95; }
+
     .titlebar{
       height: calc(22px * var(--scale));
       border-bottom: var(--winBorder) solid var(--bw);
@@ -245,12 +279,12 @@
       border-left: var(--winBorder) solid var(--bw);
       border-top: var(--winBorder) solid var(--bw);
       background:
-        repeating-linear-gradient(135deg, transparent 0 3px, rgba(0,0,0,.20) 3px 4px);
+        repeating-linear-gradient(135deg, transparent 0 3px, rgba(0,0,0,.22) 3px 4px);
       cursor: nwse-resize;
     }
     .window.dialog .resize-handle{ display:none; }
 
-    /* Scrollframe (decorative System 1-ish) */
+    /* Scrollframe */
     .scrollframe{
       display:grid;
       grid-template-columns: 1fr calc(16px * var(--scale));
@@ -291,9 +325,7 @@
     .list .item:hover{ background: var(--bw); color: var(--paper); }
 
     /* Dialog */
-    .dialog{
-      width: calc(380px * var(--scale));
-    }
+    .dialog{ width: calc(400px * var(--scale)); }
     .btnrow{
       display:flex; justify-content:flex-end; gap: calc(8px * var(--scale));
       margin-top: calc(10px * var(--scale));
@@ -307,14 +339,52 @@
     }
     .btn:active{ transform: translateY(1px); }
 
-    /* Tip outside stage */
+    /* Calculator app */
+    .calc{
+      display:grid;
+      gap: calc(10px * var(--scale));
+    }
+    .calc-display{
+      border: var(--winBorder) solid var(--bw);
+      background: #fff;
+      padding: calc(8px * var(--scale)) calc(10px * var(--scale));
+      font-size: calc(18px * var(--scale));
+      font-weight: 700;
+      text-align:right;
+      letter-spacing: .02em;
+      height: calc(36px * var(--scale));
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      overflow:hidden;
+    }
+    .calc-keys{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: calc(6px * var(--scale));
+    }
+    .key{
+      border: var(--winBorder) solid var(--bw);
+      background: #fff;
+      padding: calc(8px * var(--scale)) 0;
+      font-size: calc(13px * var(--scale));
+      cursor:pointer;
+      text-align:center;
+      user-select:none;
+    }
+    .key:active{ transform: translateY(1px); }
+    .key.wide{ grid-column: span 2; }
+    .key.op{ background: #fff; font-weight: 700; }
+    .key.fn{ background: #fff; }
+
+    /* 外部提示 */
     .outerTip{
       position: fixed;
       left: 18px;
       bottom: 14px;
       font-size: 12px;
-      opacity: .85;
-      color: rgba(255,255,255,.85);
+      opacity: .88;
+      color: rgba(255,255,255,.88);
       text-shadow: 0 2px 0 rgba(0,0,0,.55);
       pointer-events:none;
     }
@@ -325,8 +395,7 @@
       border: 1px solid rgba(255,255,255,.20);
     }
 
-    /* Optional UI size switch */
-    body.big .stageWrap{ }
+    /* UI size modes */
     body.big .ui{ --scale: 1.25; }
     body.huge .ui{ --scale: 1.55; }
   </style>
@@ -358,14 +427,16 @@
             <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
             <div class="row" data-action="openFinder">Open Finder</div>
             <div class="row" data-action="openNote">Open Note Pad</div>
+            <div class="row" data-action="openCalc">Open Calculator</div>
           </div>
 
           <div class="dropdown" id="dd-file">
             <div class="row" data-action="openFinder">Open</div>
             <div class="row" data-action="openNote">New Note</div>
+            <div class="row" data-action="openCalc">Open Calculator</div>
             <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
-            <div class="row" data-action="noteSave">Save <span class="kbd">⌘S</span></div>
-            <div class="row" data-action="noteOpen">Open…</div>
+            <div class="row" data-action="noteSave">Save Note <span class="kbd">⌘S</span></div>
+            <div class="row" data-action="noteOpen">Open Note…</div>
             <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
             <div class="row" data-action="closeFront">Close <span class="kbd">⌘W</span></div>
           </div>
@@ -384,7 +455,7 @@
           </div>
 
           <div class="dropdown" id="dd-special">
-            <div class="row" data-action="beep">Clean Up Desktop</div>
+            <div class="row" data-action="cleanup">Clean Up Desktop</div>
             <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
             <div class="row" data-action="restart">Restart…</div>
             <div class="row" data-action="shutdown">Shut Down…</div>
@@ -418,6 +489,22 @@
               <div class="label">Note Pad</div>
             </div>
 
+            <div class="icon" id="icon-calc" data-open="calc" style="left: 24px; top: 220px;">
+              <div class="glyph" aria-hidden="true">
+                <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
+                  <rect x="9" y="6" width="18" height="24" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="11" y="9" width="14" height="6" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="11" y="18" width="4" height="4" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="16" y="18" width="4" height="4" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="21" y="18" width="4" height="4" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="11" y="23" width="4" height="4" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="16" y="23" width="4" height="4" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="21" y="23" width="4" height="4" fill="#fff" stroke="#000" stroke-width="2"/>
+                </svg>
+              </div>
+              <div class="label">Calculator</div>
+            </div>
+
             <div class="icon" id="icon-trash" data-open="trash" style="right: 22px; top: 24px;">
               <div class="glyph" aria-hidden="true">
                 <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
@@ -445,12 +532,13 @@
                   <div class="list" id="finderList">
                     <div class="item" data-open="about"><span>System Folder</span><span class="muted">Folder</span></div>
                     <div class="item" data-open="note"><span>Note Pad</span><span class="muted">Application</span></div>
+                    <div class="item" data-open="calc"><span>Calculator</span><span class="muted">Application</span></div>
                     <div class="item" data-open="about"><span>Read Me</span><span class="muted">Text</span></div>
-                    <div class="item" data-open="about"><span>Paint</span><span class="muted">Application</span></div>
-                    <div class="item" data-open="about"><span>Calculator</span><span class="muted">Application</span></div>
                   </div>
                   <div style="height:14px"></div>
-                  <div class="muted">Tip: 双击图标打开 · 右下角可拖拽缩放窗口</div>
+                  <div class="muted">
+                    Tip: 拖拽窗口/图标 · 右下角缩放 · Special → Clean Up Desktop
+                  </div>
                 </div>
                 <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
               </div>
@@ -481,16 +569,57 @@
 This is a System 1-ish UI mock.
 
 Try:
-- Drag windows by the title bar
-- Resize windows by bottom-right corner
-- Use File → Save / Open…
+- Drag windows & icons
+- Resize windows (bottom-right)
+- File → Save/Open Note…
 
-(You can type here.)</textarea>
+(Ctrl works as ⌘ on Windows.)</textarea>
                 </div>
                 <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
               </div>
             </div>
             <div class="resize-handle" data-resize="win-note" title="Resize"></div>
+          </div>
+
+          <div class="window" id="win-calc" style="left: 520px; top: 140px; width: 300px; height: 360px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-calc">×</div>
+              <div class="wintitle">Calculator</div>
+            </div>
+            <div class="content" style="height: calc(100% - (22px * var(--scale)));">
+              <div class="calc" style="height:100%;">
+                <div class="calc-display" id="calcDisplay">0</div>
+                <div class="calc-keys">
+                  <div class="key fn" data-k="C">C</div>
+                  <div class="key fn" data-k="BS">⌫</div>
+                  <div class="key fn" data-k="%">%</div>
+                  <div class="key op" data-k="/">÷</div>
+
+                  <div class="key" data-k="7">7</div>
+                  <div class="key" data-k="8">8</div>
+                  <div class="key" data-k="9">9</div>
+                  <div class="key op" data-k="*">×</div>
+
+                  <div class="key" data-k="4">4</div>
+                  <div class="key" data-k="5">5</div>
+                  <div class="key" data-k="6">6</div>
+                  <div class="key op" data-k="-">−</div>
+
+                  <div class="key" data-k="1">1</div>
+                  <div class="key" data-k="2">2</div>
+                  <div class="key" data-k="3">3</div>
+                  <div class="key op" data-k="+">+</div>
+
+                  <div class="key wide" data-k="0">0</div>
+                  <div class="key" data-k=".">.</div>
+                  <div class="key op" data-k="=">=</div>
+                </div>
+                <div class="muted" style="font-size: calc(10px * var(--scale)); line-height:1.4;">
+                  Keyboard: 0-9 . + - * / Enter (=) Backspace (⌫) Esc (C)
+                </div>
+              </div>
+            </div>
+            <div class="resize-handle" data-resize="win-calc" title="Resize"></div>
           </div>
 
           <div class="window dialog" id="win-about" style="left: 270px; top: 120px;">
@@ -505,10 +634,10 @@ Try:
                 </div>
                 <div>
                   <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
-                  <div class="muted">System 1 UI mock (HTML/CSS/JS)</div>
+                  <div class="muted">System 1 style mock (HTML/CSS/JS)</div>
                   <div style="height:8px"></div>
-                  <div>Disk: localStorage (pretend)</div>
-                  <div>Windows: drag + resize</div>
+                  <div>Enhancements: pixel+dither, icon drag/snap, window snap/resize</div>
+                  <div>Apps: Note (localStorage), Calculator (working)</div>
                 </div>
               </div>
               <div class="btnrow">
@@ -565,7 +694,7 @@ Try:
   </div>
 
   <div class="outerTip">
-    拖拽窗口 · 右下角缩放 · 快捷键 <code>Ctrl+W</code> 关闭前台 · <code>Ctrl+S</code> 保存 Note
+    拖拽图标/窗口 · 边缘吸附 & 网格对齐 · <code>Ctrl+S</code> 保存 Note · <code>Ctrl+W</code> 关闭前台
   </div>
 
   <script>
@@ -585,12 +714,9 @@ Try:
       apply();
     })();
 
-    // ---------------------------
-    // Minimal System-1-ish Window Manager (inside stage)
-    // ---------------------------
+    // Helpers
     const $ = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
-
     const ui = $("#ui");
     const stage = $("#stage");
     const desktop = $("#desktop");
@@ -599,11 +725,21 @@ Try:
     let frontWin = null;
     let activeMenu = null;
 
+    function getFit(){
+      return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit')) || 1;
+    }
+    function getScale(){
+      return parseFloat(getComputedStyle(ui).getPropertyValue('--scale')) || 1;
+    }
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+    function snap(n, step){ return Math.round(n / step) * step; }
+    function stageRect(){ return stage.getBoundingClientRect(); }
+
     // Clock
-    function pad(n){ return String(n).padStart(2,"0"); }
+    function pad2(n){ return String(n).padStart(2,"0"); }
     setInterval(() => {
       const d = new Date();
-      $("#clock").textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      $("#clock").textContent = `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
     }, 500);
 
     // Beep
@@ -620,6 +756,7 @@ Try:
       }catch(e){}
     }
 
+    // Window manager
     function setFront(win){
       if(!win) return;
       $$(".window", ui).forEach(w => w.classList.add("inactive"));
@@ -628,7 +765,6 @@ Try:
       win.style.zIndex = zTop;
       frontWin = win;
     }
-
     function showWin(id){
       const win = document.getElementById(id);
       if(!win) return;
@@ -644,55 +780,6 @@ Try:
       if(vis.length) setFront(vis[vis.length-1]);
     }
 
-    // Dragging windows (within stage coords)
-    let drag = null;
-    function stageRect(){ return stage.getBoundingClientRect(); }
-    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
-
-    function onPointerDownTitle(e){
-      const title = e.currentTarget;
-      const win = title.closest(".window");
-      if(e.target.closest(".closebox")) return;
-      setFront(win);
-
-      const sr = stageRect();
-      const rect = win.getBoundingClientRect();
-
-      drag = {
-        win,
-        startX: e.clientX,
-        startY: e.clientY,
-        origL: rect.left - sr.left,
-        origT: rect.top  - sr.top
-      };
-      win.setPointerCapture?.(e.pointerId);
-    }
-
-    function onPointerMove(e){
-      if(!drag) return;
-      const dx = e.clientX - drag.startX;
-      const dy = e.clientY - drag.startY;
-
-      const w = drag.win;
-      const sr = stageRect();
-      const bw = w.offsetWidth;
-      const bh = w.offsetHeight;
-
-      const maxL = sr.width - bw - 4;
-      const maxT = sr.height - bh - 4;
-
-      const left = clamp(drag.origL + dx, 4, maxL);
-      const top  = clamp(drag.origT + dy, parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 4, maxT);
-
-      w.style.left = left + "px";
-      w.style.top  = top + "px";
-    }
-    function onPointerUp(){ drag = null; }
-
-    $$(".window .titlebar", ui).forEach(tb => tb.addEventListener("pointerdown", onPointerDownTitle));
-    window.addEventListener("pointermove", onPointerMove);
-    window.addEventListener("pointerup", onPointerUp);
-
     // Close buttons
     $$(".closebox", ui).forEach(btn => {
       btn.addEventListener("click", (e) => {
@@ -701,11 +788,78 @@ Try:
         e.stopPropagation();
       });
     });
-
-    // Bring window to front on click
+    // Bring window to front
     $$(".window", ui).forEach(win => win.addEventListener("pointerdown", () => setFront(win)));
 
-    // Resizing
+    // Window dragging + snapping
+    let drag = null;
+    function onPointerDownTitle(e){
+      const win = e.currentTarget.closest(".window");
+      if(e.target.closest(".closebox")) return;
+      setFront(win);
+
+      const sr = stageRect();
+      const rect = win.getBoundingClientRect();
+      const fit = getFit();
+
+      drag = {
+        win,
+        startX: e.clientX,
+        startY: e.clientY,
+        origL: (rect.left - sr.left) / fit,
+        origT: (rect.top  - sr.top ) / fit,
+        fit,
+      };
+      win.setPointerCapture?.(e.pointerId);
+    }
+    function onPointerMove(e){
+      if(!drag) return;
+
+      const fit = drag.fit;
+      const dx = (e.clientX - drag.startX) / fit;
+      const dy = (e.clientY - drag.startY) / fit;
+
+      const w = drag.win;
+      const sr = stageRect();
+      const sw = sr.width / fit;
+      const sh = sr.height / fit;
+
+      const bw = w.offsetWidth;
+      const bh = w.offsetHeight;
+
+      const scale = getScale();
+      const step = Math.max(6, Math.round(8 * scale));
+      const snapDist = Math.max(10, Math.round(12 * scale));
+
+      let left = drag.origL + dx;
+      let top  = drag.origT + dy;
+
+      // snap to edges
+      if (Math.abs(left - 4) < snapDist) left = 4;
+      if (Math.abs(top - (parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 4)) < snapDist) {
+        top = parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 4;
+      }
+      const maxL = sw - bw - 4;
+      const maxT = sh - bh - 4;
+      if (Math.abs(left - maxL) < snapDist) left = maxL;
+      if (Math.abs(top - maxT) < snapDist) top = maxT;
+
+      // grid snap
+      left = snap(left, step);
+      top  = snap(top, step);
+
+      left = clamp(left, 4, maxL);
+      top  = clamp(top, parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 4, maxT);
+
+      w.style.left = left + "px";
+      w.style.top  = top + "px";
+    }
+    function onPointerUp(){ drag = null; }
+    $$(".window .titlebar", ui).forEach(tb => tb.addEventListener("pointerdown", onPointerDownTitle));
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+
+    // Window resizing + snapping
     let resize = null;
     function onPointerDownResize(e){
       const id = e.currentTarget.getAttribute("data-resize");
@@ -715,47 +869,61 @@ Try:
 
       const sr = stageRect();
       const rect = win.getBoundingClientRect();
+      const fit = getFit();
 
       resize = {
         win,
         startX: e.clientX,
         startY: e.clientY,
-        origW: rect.width,
-        origH: rect.height,
-        left: rect.left - sr.left,
-        top: rect.top - sr.top
+        origW: rect.width / fit,
+        origH: rect.height / fit,
+        left: (rect.left - sr.left) / fit,
+        top:  (rect.top  - sr.top ) / fit,
+        fit
       };
       win.setPointerCapture?.(e.pointerId);
       e.stopPropagation();
     }
-
     function onPointerMoveResize(e){
       if(!resize) return;
-      const dx = e.clientX - resize.startX;
-      const dy = e.clientY - resize.startY;
+
+      const fit = resize.fit;
+      const dx = (e.clientX - resize.startX) / fit;
+      const dy = (e.clientY - resize.startY) / fit;
 
       const sr = stageRect();
-      const w = resize.win;
+      const sw = sr.width / fit;
+      const sh = sr.height / fit;
 
+      const w = resize.win;
       const minW = parseFloat(getComputedStyle(w).minWidth) || 240;
       const minH = parseFloat(getComputedStyle(w).minHeight) || 130;
 
-      const maxW = sr.width - resize.left - 4;
-      const maxH = sr.height - resize.top - 4;
+      const scale = getScale();
+      const step = Math.maxs = Math.max(6, Math.round(8 * scale));
 
-      const nw = clamp(resize.origW + dx, minW, maxW);
-      const nh = clamp(resize.origH + dy, minH, maxH);
+      const maxW = sw - resize.left - 4;
+      const maxH = sh - resize.top - 4;
+
+      let nw = clamp(resize.origW + dx, minW, maxW);
+      let nh = clamp(resize.origH + dy, minH, maxH);
+
+      // grid snap for size
+      nw = snap(nw, step);
+      nh = snap(nh, step);
+
+      nw = clamp(nw, minW, maxW);
+      nh = clamp(nh, minH, maxH);
 
       w.style.width = nw + "px";
       w.style.height = nh + "px";
     }
     function onPointerUpResize(){ resize = null; }
-
     $$(".resize-handle", ui).forEach(h => h.addEventListener("pointerdown", onPointerDownResize));
     window.addEventListener("pointermove", onPointerMoveResize);
     window.addEventListener("pointerup", onPointerUpResize);
 
-    // Desktop icon selection
+    // Desktop icon selection + open
     function clearIconSelection(){ $$(".icon", ui).forEach(i => i.classList.remove("selected")); }
     desktop.addEventListener("pointerdown", (e) => {
       if(!e.target.closest(".icon") && !e.target.closest(".window")){
@@ -764,12 +932,66 @@ Try:
       }
     });
 
-    // Icon interactions
+    // Icon dragging + snapping
+    let iconDrag = null;
+    function onPointerDownIcon(e){
+      const icon = e.currentTarget;
+      clearIconSelection();
+      icon.classList.add("selected");
+
+      const fit = getFit();
+      const sr = stageRect();
+      const rect = icon.getBoundingClientRect();
+
+      iconDrag = {
+        icon,
+        startX: e.clientX,
+        startY: e.clientY,
+        origL: (rect.left - sr.left) / fit,
+        origT: (rect.top  - sr.top ) / fit,
+        fit
+      };
+      icon.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
+    }
+    function onPointerMoveIcon(e){
+      if(!iconDrag) return;
+
+      const fit = iconDrag.fit;
+      const dx = (e.clientX - iconDrag.startX) / fit;
+      const dy = (e.clientY - iconDrag.startY) / fit;
+
+      const icon = iconDrag.icon;
+      const sr = stageRect();
+      const sw = sr.width / fit;
+      const sh = sr.height / fit;
+
+      const scale = getScale();
+      const step = Math.max(8, Math.round(10 * scale));
+      const topMin = parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 10;
+
+      const bw = icon.offsetWidth;
+      const bh = icon.offsetHeight;
+
+      let left = iconDrag.origL + dx;
+      let top  = iconDrag.origT + dy;
+
+      left = snap(left, step);
+      top  = snap(top, step);
+
+      left = clamp(left, 6, sw - bw - 6);
+      top  = clamp(top, topMin, sh - bh - 6);
+
+      icon.style.left = left + "px";
+      icon.style.top  = top + "px";
+    }
+    function onPointerUpIcon(){ iconDrag = null; }
+
     $$(".icon", ui).forEach(icon => {
-      icon.addEventListener("click", () => {
-        clearIconSelection();
-        icon.classList.add("selected");
-      });
+      icon.addEventListener("pointerdown", onPointerDownIcon);
+      icon.addEventListener("pointermove", onPointerMoveIcon);
+      icon.addEventListener("pointerup", onPointerUpIcon);
+
       icon.addEventListener("dblclick", () => {
         const open = icon.getAttribute("data-open");
         if(open) openThing(open);
@@ -788,6 +1010,7 @@ Try:
       switch(key){
         case "finder": showWin("win-finder"); break;
         case "note": showWin("win-note"); setTimeout(()=>$("#noteArea")?.focus(), 50); break;
+        case "calc": showWin("win-calc"); break;
         case "about": showWin("win-about"); break;
         case "trash": showWin("win-trash"); break;
         default: beep();
@@ -802,7 +1025,6 @@ Try:
       view: $("#dd-view"),
       special: $("#dd-special")
     };
-
     function closeMenus(){
       $$(".menu-item", ui).forEach(m => m.classList.remove("active"));
       Object.values(menus).forEach(dd => dd.style.display = "none");
@@ -810,7 +1032,6 @@ Try:
       $("#appleBtn").style.background = "";
       $("#appleBtn").style.color = "";
     }
-
     function openMenu(name, anchorEl){
       closeMenus();
       activeMenu = name;
@@ -824,19 +1045,17 @@ Try:
       const dd = menus[name];
       if(!dd) return;
 
-      // Position relative to stage
       const sr = stageRect();
       const r = anchorEl.getBoundingClientRect();
-      dd.style.left = Math.max(6, r.left - sr.left) + "px";
+      const fit = getFit();
+      dd.style.left = Math.max(6, (r.left - sr.left) / fit) + "px";
       dd.style.display = "block";
     }
-
     $("#appleBtn").addEventListener("click", (e) => {
       if(activeMenu === "apple"){ closeMenus(); return; }
       openMenu("apple", e.currentTarget);
       e.stopPropagation();
     });
-
     $$(".menu-item", ui).forEach(mi => {
       mi.addEventListener("click", (e) => {
         const name = mi.getAttribute("data-menu");
@@ -845,8 +1064,6 @@ Try:
         e.stopPropagation();
       });
     });
-
-    // click outside stage UI menus
     ui.addEventListener("pointerdown", (e) => {
       if(e.target.closest(".dropdown") || e.target.closest(".menubar")) return;
       closeMenus();
@@ -875,18 +1092,19 @@ Try:
       list.innerHTML = "";
       const saved = hasSavedNote();
       const time = localStorage.getItem(NOTE_TIME);
+
       const items = [
         { id:"factory", name:"Welcome Note", meta:"Text" },
         ...(saved ? [{ id:"saved", name:"Saved Note", meta: time ? ("Saved " + new Date(time).toLocaleString()) : "Saved" }] : [])
       ];
+
       items.forEach((it, idx) => {
         const div = document.createElement("div");
         div.className = "item";
         div.dataset.openId = it.id;
         div.innerHTML = `<span>${it.name}</span><span class="muted">${it.meta}</span>`;
         div.addEventListener("click", () => {
-          $$("#openList .item").forEach(x => x.style.background = "");
-          $$("#openList .item").forEach(x => x.style.color = "");
+          $$("#openList .item").forEach(x => { x.style.background = ""; x.style.color = ""; });
           div.style.background = "#000";
           div.style.color = "#fff";
           list.dataset.selected = it.id;
@@ -897,6 +1115,7 @@ Try:
         }
         list.appendChild(div);
       });
+
       showWin("win-open");
       setFront($("#win-open"));
     }
@@ -907,10 +1126,8 @@ Try:
         $("#noteArea").value =
 `Welcome to Macintosh.
 
-This is a System 1-ish UI mock.
-
-Use File → Save to store this note.
-Use File → Open… to load it back.
+Use File → Save Note to store this note.
+Use File → Open Note… to load it back.
 
 (You can type here.)`;
         $("#noteTitle").textContent = "Note Pad";
@@ -927,6 +1144,48 @@ Use File → Open… to load it back.
       $("#noteArea")?.focus();
     }
 
+    // Clean up desktop (真正排列图标)
+    function cleanUpDesktop(){
+      const scale = getScale();
+      const fit = getFit();
+      const sr = stageRect();
+      const sw = sr.width / fit;
+      const sh = sr.height / fit;
+
+      const topMin = parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 10;
+      const leftX = 24;
+      const rightX = sw - (76 * scale) - 26;
+      const stepY = Math.round(96 * scale);
+      const stepX = Math.round(92 * scale);
+
+      const icons = $$(".icon", ui);
+      const trash = $("#icon-trash");
+
+      // trash 固定右上
+      if(trash){
+        trash.style.left = rightX + "px";
+        trash.style.top = (topMin + 14) + "px";
+      }
+
+      // 其他按列从左往下排
+      let x = leftX;
+      let y = topMin + 14;
+      icons
+        .filter(i => i !== trash)
+        .sort((a,b) => a.id.localeCompare(b.id))
+        .forEach(icon => {
+          icon.style.left = x + "px";
+          icon.style.top  = y + "px";
+          y += stepY;
+          if(y > sh - 120){
+            y = topMin + 14;
+            x += stepX;
+          }
+        });
+
+      beep();
+    }
+
     // Dropdown actions
     function restoreAbout(){
       $("#win-about .wintitle").textContent = "About the Macintosh";
@@ -937,10 +1196,9 @@ Use File → Open… to load it back.
           </div>
           <div>
             <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
-            <div class="muted">System 1 UI mock (HTML/CSS/JS)</div>
+            <div class="muted">System 1 style mock (HTML/CSS/JS)</div>
             <div style="height:8px"></div>
-            <div>Disk: localStorage (pretend)</div>
-            <div>Windows: drag + resize</div>
+            <div>Apps: Note (localStorage), Calculator (working)</div>
           </div>
         </div>
         <div class="btnrow">
@@ -948,12 +1206,10 @@ Use File → Open… to load it back.
         </div>`;
       bindDialogButtons();
     }
-
     function bindDialogButtons(){
       $$("#win-about [data-action]").forEach(btn=>{
         btn.onclick = (e) => {
-          const act = btn.getAttribute("data-action");
-          applyAction(act);
+          applyAction(btn.getAttribute("data-action"));
           e.stopPropagation();
         };
       });
@@ -969,6 +1225,9 @@ Use File → Open… to load it back.
           $("#noteTitle").textContent = "Note Pad";
           setTimeout(()=>$("#noteArea")?.focus(), 50);
           break;
+        case "openCalc":
+          showWin("win-calc");
+          break;
         case "noteSave":
           showWin("win-note");
           saveNote();
@@ -978,6 +1237,9 @@ Use File → Open… to load it back.
           break;
         case "doOpen":
           doOpen();
+          break;
+        case "cleanup":
+          cleanUpDesktop();
           break;
         case "closeFront":
           if(frontWin) hideWin(frontWin.id); else beep();
@@ -995,20 +1257,10 @@ Use File → Open… to load it back.
           break;
         case "restart":
           beep();
-          showWin("win-about");
-          $("#win-about .wintitle").textContent = "Restart";
-          $("#win-about .content").innerHTML = `
-            <div>Are you sure you want to restart?</div>
-            <div class="btnrow">
-              <button class="btn" data-action="doRestart">Restart</button>
-              <button class="btn" data-action="closeAbout">Cancel</button>
-            </div>`;
-          bindDialogButtons();
-          break;
-        case "doRestart":
-          closeMenus();
+          alertBox("Restart", "Pretend restart complete.");
+          // 简单重置窗口可见性
           $$(".window", ui).forEach(w => w.classList.remove("visible"));
-          setTimeout(() => { showWin("win-finder"); }, 250);
+          setTimeout(() => { showWin("win-finder"); }, 180);
           break;
         case "shutdown":
           beep();
@@ -1036,18 +1288,18 @@ Use File → Open… to load it back.
       });
     });
 
-    // open dialog buttons
+    // Open dialog buttons
     $$("#win-open [data-action]").forEach(btn => {
       btn.addEventListener("click", (e) => {
-        const act = btn.getAttribute("data-action");
-        applyAction(act);
+        applyAction(btn.getAttribute("data-action"));
         e.stopPropagation();
       });
     });
 
-    // keyboard shortcuts: Windows用Ctrl模拟⌘
+    // Keyboard shortcuts: Windows用Ctrl模拟⌘
     window.addEventListener("keydown", (e) => {
       const cmd = e.ctrlKey || e.metaKey;
+
       if(cmd && (e.key === "w" || e.key === "W")){
         e.preventDefault();
         if(frontWin) hideWin(frontWin.id); else beep();
@@ -1060,12 +1312,163 @@ Use File → Open… to load it back.
       if(e.key === "Escape"){
         closeMenus();
         clearIconSelection();
+        // calc clear (optional)
       }
     });
 
-    // default: show Finder
+    // ===== Calculator logic (真正可用) =====
+    const calcDisplay = $("#calcDisplay");
+    const calcWin = $("#win-calc");
+    let calcState = {
+      display: "0",
+      first: null,
+      op: null,
+      waiting: false
+    };
+
+    function calcRender(){
+      // 限制长度，像老计算器一样裁剪
+      const s = calcState.display;
+      calcDisplay.textContent = (s.length > 14) ? s.slice(0, 14) : s;
+    }
+
+    function calcClear(){
+      calcState = { display:"0", first:null, op:null, waiting:false };
+      calcRender();
+    }
+
+    function calcBackspace(){
+      if(calcState.waiting) return;
+      const s = calcState.display;
+      if(s.length <= 1) calcState.display = "0";
+      else calcState.display = s.slice(0, -1);
+      calcRender();
+    }
+
+    function calcInputDigit(d){
+      if(calcState.waiting){
+        calcState.display = d;
+        calcState.waiting = false;
+      }else{
+        calcState.display = (calcState.display === "0") ? d : (calcState.display + d);
+      }
+      calcRender();
+    }
+
+    function calcInputDot(){
+      if(calcState.waiting){
+        calcState.display = "0.";
+        calcState.waiting = false;
+        calcRender();
+        return;
+      }
+      if(!calcState.display.includes(".")){
+        calcState.display += ".";
+        calcRender();
+      }
+    }
+
+    function calcPercent(){
+      const v = parseFloat(calcState.display);
+      if(!Number.isFinite(v)) return;
+      calcState.display = String(v / 100);
+      calcRender();
+    }
+
+    function calcToggleSign(){
+      const v = parseFloat(calcState.display);
+      if(!Number.isFinite(v)) return;
+      calcState.display = String(-v);
+      calcRender();
+    }
+
+    function calcCompute(a, b, op){
+      if(op === "+") return a + b;
+      if(op === "-") return a - b;
+      if(op === "*") return a * b;
+      if(op === "/") return (b === 0) ? NaN : (a / b);
+      return b;
+    }
+
+    function calcOperator(nextOp){
+      const input = parseFloat(calcState.display);
+
+      if(calcState.first == null){
+        calcState.first = input;
+      }else if(calcState.op && !calcState.waiting){
+        const result = calcCompute(calcState.first, input, calcState.op);
+        if(!Number.isFinite(result)){
+          calcState.display = "Error";
+          calcState.first = null;
+          calcState.op = null;
+          calcState.waiting = true;
+          calcRender();
+          return;
+        }
+        calcState.first = result;
+        calcState.display = String(result);
+      }
+
+      calcState.op = nextOp;
+      calcState.waiting = true;
+      calcRender();
+    }
+
+    function calcEquals(){
+      const input = parseFloat(calcState.display);
+      if(calcState.op == null || calcState.first == null || calcState.waiting) return;
+
+      const result = calcCompute(calcState.first, input, calcState.op);
+      if(!Number.isFinite(result)){
+        calcState.display = "Error";
+      }else{
+        calcState.display = String(result);
+      }
+      calcState.first = null;
+      calcState.op = null;
+      calcState.waiting = true;
+      calcRender();
+    }
+
+    function calcPress(k){
+      if(k >= "0" && k <= "9") return calcInputDigit(k);
+      if(k === ".") return calcInputDot();
+      if(k === "C") return calcClear();
+      if(k === "BS") return calcBackspace();
+      if(k === "%") return calcPercent();
+      if(k === "±") return calcToggleSign();
+      if(k === "+" || k === "-" || k === "*" || k === "/") return calcOperator(k);
+      if(k === "=") return calcEquals();
+    }
+
+    // Calculator button events
+    $("#win-calc").addEventListener("click", (e) => {
+      const btn = e.target.closest(".key");
+      if(!btn) return;
+      const k = btn.getAttribute("data-k");
+      if(k) calcPress(k);
+    });
+
+    // Calculator keyboard input (仅当前台窗口为 calc 时更像应用；这里简化：打开 calc 时也能用)
+    window.addEventListener("keydown", (e) => {
+      const calcVisible = $("#win-calc").classList.contains("visible");
+      if(!calcVisible) return;
+
+      const key = e.key;
+
+      if(key >= "0" && key <= "9"){ e.preventDefault(); calcInputDigit(key); return; }
+      if(key === "."){ e.preventDefault(); calcInputDot(); return; }
+      if(key === "+" || key === "-" || key === "*" || key === "/"){ e.preventDefault(); calcOperator(key); return; }
+      if(key === "Enter" || key === "="){ e.preventDefault(); calcEquals(); return; }
+      if(key === "Backspace"){ e.preventDefault(); calcBackspace(); return; }
+      if(key === "Escape"){ e.preventDefault(); calcClear(); return; }
+      if(key === "%"){ e.preventDefault(); calcPercent(); return; }
+    });
+
+    // Init
     showWin("win-finder");
     setFront($("#win-finder"));
+    calcRender();
   </script>
 </body>
 </html>
