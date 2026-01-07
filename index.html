@@ -3,282 +3,707 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Test Page / 部署测试页</title>
-  <meta name="description" content="用于测试部署、HTTPS、中文字体、响应式布局与交互的单页HTML" />
+  <title>RETROFUTURE OS · LOGIN</title>
   <style>
-    :root { color-scheme: light dark; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-      line-height: 1.6;
+    :root{
+      --bg:#05070a;
+      --panel:#0b1018cc;
+      --grid:#0d2b2b;
+      --phosphor:#62ffb3;
+      --phosphor2:#7de7ff;
+      --warn:#ffcf5a;
+      --bad:#ff5a7a;
+      --good:#62ffb3;
+      --dim: rgba(98,255,179,.18);
+      --line: rgba(98,255,179,.35);
+      --shadow: rgba(0,0,0,.65);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     }
-    header {
-      padding: 24px 16px;
-      border-bottom: 1px solid rgba(128,128,128,.3);
-      position: sticky;
-      top: 0;
-      background: rgba(255,255,255,.85);
-      backdrop-filter: blur(8px);
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:
+        radial-gradient(1200px 800px at 60% 40%, rgba(98,255,179,.12), transparent 55%),
+        radial-gradient(900px 700px at 30% 70%, rgba(125,231,255,.10), transparent 55%),
+        linear-gradient(180deg, #04060a, #05070a 40%, #030408);
+      color:var(--phosphor);
+      font-family: var(--mono);
+      overflow:hidden;
     }
-    @media (prefers-color-scheme: dark) {
-      header { background: rgba(0,0,0,.6); }
+
+    /* Subtle animated grid */
+    .grid{
+      position:fixed; inset:-40%;
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px) 0 0/ 48px 48px,
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/ 48px 48px;
+      opacity:.18;
+      transform: rotate(-8deg) translate3d(0,0,0);
+      animation: drift 18s linear infinite;
+      pointer-events:none;
+      filter: drop-shadow(0 0 10px rgba(98,255,179,.08));
     }
-    main { max-width: 920px; margin: 0 auto; padding: 16px; }
-    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-    @media (min-width: 860px) { .grid { grid-template-columns: 1.2fr .8fr; } }
-    .card {
-      border: 1px solid rgba(128,128,128,.3);
+    @keyframes drift{
+      0%{ transform: rotate(-8deg) translate(0,0); }
+      100%{ transform: rotate(-8deg) translate(120px, 90px); }
+    }
+
+    /* CRT scanlines + vignette + noise */
+    .crt{
+      position:fixed; inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(1200px 900px at 50% 45%, rgba(255,255,255,.03), transparent 60%),
+        radial-gradient(900px 700px at 50% 55%, rgba(0,0,0,.55), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.05), transparent 18%, transparent 82%, rgba(0,0,0,.18));
+      mix-blend-mode: screen;
+      opacity:.9;
+    }
+    .scanlines{
+      position:fixed; inset:0;
+      pointer-events:none;
+      background: linear-gradient(to bottom,
+        rgba(0,0,0,.14) 0px,
+        rgba(0,0,0,.14) 1px,
+        transparent 2px,
+        transparent 4px);
+      background-size: 100% 4px;
+      opacity:.32;
+      animation: scan 8s linear infinite;
+    }
+    @keyframes scan{
+      0%{ transform: translateY(0); }
+      100%{ transform: translateY(4px); }
+    }
+    .noise{
+      position:fixed; inset:-40%;
+      pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      opacity:.08;
+      transform: rotate(6deg);
+      animation: noiseMove 2.6s steps(2) infinite;
+      mix-blend-mode: overlay;
+    }
+    @keyframes noiseMove{
+      0%{ transform: translate(0,0) rotate(6deg); }
+      100%{ transform: translate(60px, 40px) rotate(6deg); }
+    }
+
+    /* Main frame */
+    .wrap{
+      position:relative;
+      height:100%;
+      display:grid;
+      place-items:center;
+      padding:28px;
+    }
+    .frame{
+      width:min(980px, 100%);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(13,20,28,.78), rgba(8,11,16,.78));
+      border: 1px solid rgba(98,255,179,.28);
+      box-shadow:
+        0 30px 90px var(--shadow),
+        inset 0 0 0 1px rgba(125,231,255,.08),
+        inset 0 0 50px rgba(98,255,179,.06);
+      overflow:hidden;
+      position:relative;
+    }
+    .frame::before{
+      content:"";
+      position:absolute; inset:-2px;
+      border-radius: calc(var(--radius) + 2px);
+      background: radial-gradient(800px 220px at 30% 0%, rgba(125,231,255,.16), transparent 60%);
+      pointer-events:none;
+      mix-blend-mode: screen;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(98,255,179,.18);
+      background: rgba(3,6,10,.45);
+      backdrop-filter: blur(6px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-size:13px;
+      color: rgba(125,231,255,.95);
+    }
+    .leds{ display:flex; gap:6px; }
+    .led{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(98,255,179,.25);
+      box-shadow: 0 0 12px rgba(98,255,179,.22);
+    }
+    .led.warn{ background: rgba(255,207,90,.22); box-shadow: 0 0 12px rgba(255,207,90,.18); }
+    .led.bad { background: rgba(255,90,122,.22); box-shadow: 0 0 12px rgba(255,90,122,.18); }
+
+    .meta{
+      display:flex; gap:10px; align-items:center;
+      font-size:12px;
+      color: rgba(98,255,179,.75);
+    }
+    .pill{
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(98,255,179,.22);
+      background: rgba(8,12,16,.55);
+    }
+
+    .content{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:0;
+      min-height: 520px;
+    }
+    @media (max-width: 860px){
+      .content{ grid-template-columns: 1fr; }
+    }
+
+    .left{
+      padding:22px 22px 26px;
+      border-right:1px solid rgba(98,255,179,.14);
+      position:relative;
+    }
+    @media (max-width: 860px){
+      .left{ border-right:0; border-bottom:1px solid rgba(98,255,179,.14); }
+    }
+
+    .right{
+      padding:22px 22px 26px;
+      position:relative;
+    }
+
+    .title{
+      margin:0 0 10px;
+      font-size:18px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color: rgba(98,255,179,.95);
+      text-shadow: 0 0 22px rgba(98,255,179,.18);
+    }
+    .subtitle{
+      margin:0 0 18px;
+      font-size:12px;
+      color: rgba(98,255,179,.70);
+      line-height:1.7;
+    }
+
+    .terminal{
+      border-radius: 14px;
+      border: 1px solid rgba(98,255,179,.22);
+      background:
+        radial-gradient(900px 280px at 50% 0%, rgba(125,231,255,.08), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.12));
+      padding:14px;
+      box-shadow: inset 0 0 30px rgba(0,0,0,.45);
+    }
+    .log{
+      margin:0;
+      white-space:pre-wrap;
+      font-size:12px;
+      color: rgba(98,255,179,.82);
+      line-height:1.6;
+      min-height: 120px;
+    }
+    .cursor{
+      display:inline-block;
+      width:9px;
+      height:1.1em;
+      background: rgba(98,255,179,.8);
+      margin-left:4px;
+      transform: translateY(2px);
+      animation: blink 1s steps(1) infinite;
+      box-shadow: 0 0 10px rgba(98,255,179,.18);
+    }
+    @keyframes blink{
+      50%{ opacity:0; }
+    }
+
+    .form{
+      margin-top:16px;
+      display:grid;
+      gap:12px;
+    }
+    .field{
+      display:grid;
+      gap:6px;
+    }
+    label{
+      font-size:12px;
+      color: rgba(125,231,255,.78);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    input{
+      width:100%;
+      padding:12px 12px;
       border-radius: 12px;
-      padding: 16px;
+      border: 1px solid rgba(98,255,179,.22);
+      outline:none;
+      background: rgba(6,10,14,.55);
+      color: rgba(98,255,179,.92);
+      font-family: var(--mono);
+      font-size: 13px;
+      box-shadow:
+        inset 0 0 0 1px rgba(0,0,0,.2),
+        0 0 0 0 rgba(98,255,179,0);
+      transition: .18s ease;
     }
-    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    .btn {
-      border: 1px solid rgba(128,128,128,.5);
-      background: transparent;
-      padding: 8px 12px;
-      border-radius: 10px;
-      cursor: pointer;
+    input:focus{
+      border-color: rgba(125,231,255,.55);
+      box-shadow:
+        0 0 0 3px rgba(125,231,255,.14),
+        0 0 30px rgba(98,255,179,.12);
     }
-    .btn:hover { filter: brightness(1.05); }
-    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-    pre {
-      overflow: auto;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(128,128,128,.3);
+
+    .row{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
     }
-    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 10px; }
-    th, td { padding: 10px; border-bottom: 1px solid rgba(128,128,128,.25); text-align: left; }
-    th { font-weight: 650; }
-    .muted { opacity: .75; }
-    .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; border: 1px solid rgba(128,128,128,.4); }
-    .hr { height: 1px; background: rgba(128,128,128,.25); margin: 16px 0; }
-    footer { padding: 24px 16px; border-top: 1px solid rgba(128,128,128,.3); text-align: center; }
-    .toast {
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      padding: 12px 14px;
+    .btn{
+      padding:11px 14px;
       border-radius: 12px;
-      border: 1px solid rgba(128,128,128,.35);
-      background: rgba(0,0,0,.75);
-      color: white;
-      display: none;
-      max-width: min(420px, calc(100vw - 32px));
+      border: 1px solid rgba(98,255,179,.28);
+      background:
+        linear-gradient(180deg, rgba(98,255,179,.10), rgba(98,255,179,.02));
+      color: rgba(98,255,179,.95);
+      font-family: var(--mono);
+      font-size: 13px;
+      cursor:pointer;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      transition: .18s ease;
+      box-shadow: 0 12px 30px rgba(0,0,0,.35), inset 0 0 0 1px rgba(125,231,255,.06);
+    }
+    .btn:hover{ filter: brightness(1.08); transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0px); filter: brightness(0.98); }
+    .btn.secondary{
+      background: rgba(6,10,14,.35);
+      border-color: rgba(98,255,179,.18);
+      color: rgba(98,255,179,.8);
+      box-shadow: none;
+    }
+    .hint{
+      font-size:12px;
+      color: rgba(98,255,179,.65);
+    }
+    .hint code{
+      padding:2px 6px;
+      border-radius: 8px;
+      border:1px solid rgba(98,255,179,.18);
+      background: rgba(6,10,14,.45);
+      color: rgba(98,255,179,.9);
+    }
+
+    .status{
+      margin-top:10px;
+      font-size:12px;
+      min-height: 18px;
+      color: rgba(98,255,179,.8);
+    }
+    .status.bad{ color: rgba(255,90,122,.92); text-shadow: 0 0 18px rgba(255,90,122,.18); }
+    .status.good{ color: rgba(98,255,179,.92); text-shadow: 0 0 18px rgba(98,255,179,.18); }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(125,231,255,.20);
+      background: rgba(6,10,14,.35);
+      color: rgba(125,231,255,.80);
+      font-size:12px;
+      line-height:1.4;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: rgba(125,231,255,.65);
+      box-shadow: 0 0 12px rgba(125,231,255,.2);
+    }
+
+    .hud{
+      margin-top: 14px;
+      display:grid;
+      gap:10px;
+    }
+    .bar{
+      height:10px;
+      border-radius:999px;
+      border:1px solid rgba(98,255,179,.18);
+      background: rgba(0,0,0,.25);
+      overflow:hidden;
+    }
+    .bar > i{
+      display:block; height:100%;
+      width: 36%;
+      background: linear-gradient(90deg, rgba(98,255,179,.15), rgba(98,255,179,.55), rgba(125,231,255,.35));
+      box-shadow: 0 0 18px rgba(98,255,179,.16);
+      animation: load 2.4s ease-in-out infinite;
+    }
+    @keyframes load{
+      0%{ transform: translateX(-40%); }
+      50%{ transform: translateX(120%); }
+      100%{ transform: translateX(240%); }
+    }
+
+    /* Fake OS screen after login */
+    .os{
+      display:none;
+      padding:22px;
+    }
+    .desktop{
+      border-radius: 16px;
+      border:1px solid rgba(98,255,179,.22);
+      background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.15));
+      padding:16px;
+      box-shadow: inset 0 0 30px rgba(0,0,0,.45);
+      min-height: 420px;
+    }
+    .deskTopRow{
+      display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+      margin-bottom: 14px;
+    }
+    .big{
+      font-size: 16px;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+      color: rgba(125,231,255,.92);
+    }
+    .tiles{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:12px;
+    }
+    @media (max-width: 860px){
+      .tiles{ grid-template-columns: 1fr; }
+    }
+    .tile{
+      border-radius: 14px;
+      border:1px solid rgba(98,255,179,.18);
+      background: rgba(6,10,14,.35);
+      padding:12px;
+      min-height: 86px;
+    }
+    .tile h4{
+      margin:0 0 6px;
+      font-size:12px;
+      color: rgba(98,255,179,.92);
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .tile p{ margin:0; font-size:12px; color: rgba(98,255,179,.68); line-height:1.6; }
+
+    /* Small glitch */
+    .glitch{
+      animation: glitch .18s steps(2) 2;
+    }
+    @keyframes glitch{
+      0%{ transform: translate(0,0); filter: hue-rotate(0deg); }
+      50%{ transform: translate(1px,-1px); filter: hue-rotate(8deg); }
+      100%{ transform: translate(0,0); filter: hue-rotate(0deg); }
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <div class="row" style="justify-content: space-between;">
-      <div>
-        <div style="font-size: 18px; font-weight: 750;">部署测试页 ✅</div>
-        <div class="muted" style="font-size: 13px;">用于测试静态站点、DNS、HTTPS、缓存与中文渲染</div>
-      </div>
-      <div class="row">
-        <span class="pill" id="protocolPill">协议：?</span>
-        <span class="pill" id="timePill">时间：?</span>
-      </div>
-    </div>
-  </header>
+  <div class="grid"></div>
+  <div class="noise"></div>
+  <div class="scanlines"></div>
+  <div class="crt"></div>
 
-  <main>
-    <div class="grid">
-      <section class="card">
-        <h2 style="margin-top: 0;">基础检查</h2>
-        <ul>
-          <li>当前 URL：<code id="urlText">-</code></li>
-          <li>Host：<code id="hostText">-</code></li>
-          <li>User-Agent：<code id="uaText">-</code></li>
-          <li>语言：<code id="langText">-</code></li>
-        </ul>
-
-        <div class="hr"></div>
-
-        <h3>交互测试</h3>
-        <div class="row">
-          <button class="btn" id="btnToast">弹个提示</button>
-          <button class="btn" id="btnCopy">复制一段文本</button>
-          <button class="btn" id="btnFetch">Fetch /api/ping（可选）</button>
+  <div class="wrap">
+    <div class="frame" id="frame">
+      <div class="topbar">
+        <div class="brand">
+          <div class="leds" aria-hidden="true">
+            <span class="led"></span><span class="led warn"></span><span class="led bad"></span>
+          </div>
+          <span>RETROFUTURE · TERMINAL OS</span>
         </div>
-        <p class="muted" id="fetchResult" style="margin-bottom: 0;"></p>
+        <div class="meta">
+          <span class="pill" id="clock">--:--:--</span>
+          <span class="pill">LINK: <span id="link">SECURE</span></span>
+          <span class="pill">NODE: <span id="node">A-17</span></span>
+        </div>
+      </div>
 
-        <div class="hr"></div>
+      <!-- LOGIN SCREEN -->
+      <div class="content" id="loginScreen">
+        <div class="left">
+          <h1 class="title">User Authentication</h1>
+          <p class="subtitle">
+            欢迎回到 <span style="color:rgba(125,231,255,.95);">RETROFUTURE TERMINAL</span>。<br/>
+            本终端采用磷光显示与加密握手协议。请输入凭据以继续。
+          </p>
 
-        <h3>表单与输入</h3>
-        <form id="testForm">
-          <div class="row">
-            <label>姓名：
-              <input name="name" placeholder="fox chen" required />
-            </label>
-            <label>邮箱：
-              <input name="email" type="email" placeholder="name@example.com" />
-            </label>
+          <div class="terminal" role="region" aria-label="系统日志">
+            <pre class="log" id="log"></pre>
+            <span class="cursor" aria-hidden="true"></span>
           </div>
 
-          <div style="margin-top: 10px;">
-            <label>留言：</label><br />
-            <textarea name="msg" rows="4" style="width: 100%;" placeholder="测试中文、换行、表情符号🙂"></textarea>
-          </div>
+          <form class="form" id="loginForm" autocomplete="on">
+            <div class="field">
+              <label for="user">User ID</label>
+              <input id="user" name="user" placeholder="e.g. foxchen" required />
+            </div>
+            <div class="field">
+              <label for="pass">Passphrase</label>
+              <input id="pass" name="pass" type="password" placeholder="••••••••" required />
+            </div>
 
-          <div class="row" style="margin-top: 10px;">
-            <label><input type="checkbox" name="agree" /> 我同意这只是测试</label>
-            <button class="btn" type="submit">提交（本地拦截）</button>
-          </div>
-        </form>
+            <div class="row">
+              <button class="btn" type="submit" id="btnLogin">Login</button>
+              <button class="btn secondary" type="button" id="btnGuest">Guest Access</button>
+              <span class="hint">提示：试试 <code>neo</code> / <code>2049</code></span>
+            </div>
 
-        <div class="hr"></div>
-
-        <h3>代码块（测试等宽字体/滚动）</h3>
-        <pre><code># Nginx 示例（仅用于测试展示）
-server {
-  listen 80;
-  server_name example.com www.example.com;
-
-  root /var/www/site;
-  index index.html;
-
-  location / {
-    try_files $uri $uri/ =404;
-  }
-}</code></pre>
-      </section>
-
-      <aside class="card">
-        <h2 style="margin-top: 0;">布局/资源测试</h2>
-
-        <h3>表格</h3>
-        <table>
-          <thead>
-            <tr><th>项目</th><th>状态</th><th>备注</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>DNS 解析</td><td>待检查</td><td class="muted">A / CNAME 是否正确</td></tr>
-            <tr><td>HTTPS</td><td>待检查</td><td class="muted">证书是否自动签发</td></tr>
-            <tr><td>缓存</td><td>待检查</td><td class="muted">刷新是否更新</td></tr>
-          </tbody>
-        </table>
-
-        <div class="hr"></div>
-
-        <h3>进度条</h3>
-        <label class="muted">模拟加载：</label>
-        <progress id="prog" value="25" max="100" style="width: 100%;"></progress>
-        <div class="row" style="margin-top: 8px;">
-          <button class="btn" id="btnProg">增加 10%</button>
-          <span class="muted" id="progText">25%</span>
+            <div class="status" id="status"></div>
+          </form>
         </div>
 
-        <div class="hr"></div>
+        <div class="right">
+          <div class="badge">
+            <span class="dot"></span>
+            <span>SECURITY MODULE · PHOS-LOCK v3.2<br/><span class="muted">Quantum Handshake (Simulated)</span></span>
+          </div>
 
-        <h3>图片占位（不依赖外网）</h3>
-        <svg viewBox="0 0 800 450" width="100%" style="border-radius: 12px; border: 1px solid rgba(128,128,128,.3);">
-          <defs>
-            <linearGradient id="g" x1="0" x2="1">
-              <stop offset="0" stop-color="rgba(128,128,128,.15)"/>
-              <stop offset="1" stop-color="rgba(128,128,128,.35)"/>
-            </linearGradient>
-          </defs>
-          <rect width="800" height="450" fill="url(#g)"></rect>
-          <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle"
-                font-size="32" fill="rgba(255,255,255,.85)">SVG Placeholder</text>
-          <text x="50%" y="58%" text-anchor="middle" dominant-baseline="middle"
-                font-size="16" fill="rgba(255,255,255,.75)">用于测试图片渲染与自适应</text>
-        </svg>
-      </aside>
+          <div class="hud">
+            <div class="hint">信号扫描</div>
+            <div class="bar" aria-label="扫描进度"><i></i></div>
+
+            <div class="hint">设备摘要</div>
+            <div class="terminal">
+              <pre class="log" id="spec"></pre>
+            </div>
+
+            <div class="hint">登录须知</div>
+            <div class="terminal">
+              <pre class="log">
+- AUTH MODE: LOCAL (DEMO)
+- RATE LIMIT: 5 attempts / min
+- STORAGE: No credentials stored
+- NOTE: This screen is a UI mock.
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAKE OS AFTER LOGIN -->
+      <div class="os" id="osScreen">
+        <div class="desktop">
+          <div class="deskTopRow">
+            <div class="big">TERMINAL OS · DESKTOP</div>
+            <div class="row">
+              <span class="pill">USER: <span id="who">GUEST</span></span>
+              <button class="btn secondary" id="btnLogout" type="button">Logout</button>
+            </div>
+          </div>
+
+          <div class="tiles">
+            <div class="tile">
+              <h4>SYS STATUS</h4>
+              <p id="sysStatus">Nominal. No anomalies detected.</p>
+            </div>
+            <div class="tile">
+              <h4>INBOX</h4>
+              <p>3 unread transmissions. 1 flagged as “priority”.</p>
+            </div>
+            <div class="tile">
+              <h4>RUN</h4>
+              <p><code>scan --deep</code> · <code>uplink --renew</code> · <code>vault --open</code></p>
+            </div>
+          </div>
+
+          <div class="hr" style="height:1px;background:rgba(98,255,179,.18);margin:16px 0;"></div>
+
+          <div class="terminal">
+            <pre class="log" id="osLog"></pre>
+            <span class="cursor" aria-hidden="true"></span>
+          </div>
+        </div>
+      </div>
+
     </div>
-
-    <div class="card" style="margin-top: 16px;">
-      <h2 style="margin-top: 0;">长文本滚动测试</h2>
-      <p class="muted">
-        下面这段用于测试：中文换行、段落间距、移动端滚动、粘性头部遮挡等。
-      </p>
-      <p>
-        火星的风带着细碎的尘沙，贴着地表滑行。你可以把这段当作占位内容：在不同屏幕宽度下，
-        观察行宽、字距、标点挤压是否舒服；也可以测试浏览器的页面缩放、深色模式、以及缓存刷新。
-      </p>
-      <p>
-        如果你在做反向代理或 CDN，请多次刷新并打开开发者工具观察：是否命中缓存、响应头是否正确、
-        静态资源是否被压缩（gzip/brotli）、以及是否有 mixed content（HTTPS 下加载 HTTP 资源）。
-      </p>
-    </div>
-  </main>
-
-  <footer class="muted">
-    <div>© <span id="yearText"></span> Test Page</div>
-    <div style="font-size: 12px;">提示：如果你需要测试后端，把 <code>/api/ping</code> 路由在服务器上返回 JSON 就行。</div>
-  </footer>
-
-  <div class="toast" id="toast"></div>
+  </div>
 
   <script>
     const $ = (id) => document.getElementById(id);
 
-    function showToast(msg) {
-      const t = $("toast");
-      t.textContent = msg;
-      t.style.display = "block";
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => (t.style.display = "none"), 2400);
+    // Clock
+    function pad(n){ return String(n).padStart(2,"0"); }
+    setInterval(() => {
+      const d = new Date();
+      $("clock").textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }, 250);
+
+    // Device summary
+    const ua = navigator.userAgent;
+    const lang = navigator.language || "unknown";
+    const plat = navigator.platform || "unknown";
+    const mem = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "n/a";
+    const cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency}` : "n/a";
+    const proto = location.protocol.replace(":","").toUpperCase();
+    $("spec").textContent =
+`PROTO   : ${proto}
+LANG    : ${lang}
+PLATFORM: ${plat}
+CORES   : ${cores}
+MEM     : ${mem}
+UA      : ${ua.slice(0, 92)}${ua.length>92?"…":""}`;
+
+    // Terminal log typing
+    const logLines = [
+      "BOOTSEQ: 07 11 3A 9F · INIT DISPLAY DRIVER...",
+      "PHOSPHOR: CALIBRATED · SCANLINES: ON · NOISE: LOW",
+      "SECURE LINK: HANDSHAKE PENDING...",
+      "AUTH: READY · ENTER CREDENTIALS TO CONTINUE"
+    ];
+    const logEl = $("log");
+    let li = 0;
+    function typeLine(line, cb){
+      let i = 0;
+      const t = setInterval(() => {
+        logEl.textContent += line[i++] || "";
+        if (i > line.length){
+          clearInterval(t);
+          logEl.textContent += "\n";
+          cb && cb();
+        }
+      }, 16 + Math.random()*24);
+    }
+    function typeAll(){
+      if (li >= logLines.length) return;
+      typeLine(logLines[li++], () => setTimeout(typeAll, 120));
+    }
+    typeAll();
+
+    // Link indicator (pure cosmetic)
+    const linkEl = $("link");
+    setInterval(() => {
+      const ok = Math.random() > 0.05;
+      linkEl.textContent = ok ? "SECURE" : "DEGRADED";
+      linkEl.style.color = ok ? "rgba(98,255,179,.92)" : "rgba(255,207,90,.92)";
+    }, 1800);
+
+    // Fake node id
+    const nodes = ["A-17","K-02","V-41","N-09","S-33"];
+    $("node").textContent = nodes[Math.floor(Math.random()*nodes.length)];
+
+    // Login behavior
+    const statusEl = $("status");
+    const frame = $("frame");
+    const loginScreen = $("loginScreen");
+    const osScreen = $("osScreen");
+    const who = $("who");
+    const osLog = $("osLog");
+    const btnLogin = $("btnLogin");
+
+    function setStatus(msg, kind){
+      statusEl.className = "status" + (kind ? " " + kind : "");
+      statusEl.textContent = msg || "";
+    }
+    function glitch(){
+      frame.classList.remove("glitch");
+      void frame.offsetWidth;
+      frame.classList.add("glitch");
     }
 
-    // 基础信息
-    $("urlText").textContent = location.href;
-    $("hostText").textContent = location.host || "(file:// 本地打开)";
-    $("uaText").textContent = navigator.userAgent;
-    $("langText").textContent = navigator.language;
-    $("protocolPill").textContent = "协议：" + location.protocol.replace(":", "").toUpperCase();
-    $("timePill").textContent = "时间：" + new Date().toLocaleString();
-    $("yearText").textContent = new Date().getFullYear();
+    function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-    // Toast
-    $("btnToast").addEventListener("click", () => {
-      showToast("提示：页面 JS 正常运行 ✅ " + new Date().toLocaleTimeString());
-    });
+    async function fakeAuth(user){
+      btnLogin.disabled = true;
+      setStatus("正在验证凭据…", "");
+      glitch();
 
-    // Copy
-    $("btnCopy").addEventListener("click", async () => {
-      const text = "Hello from test.html — 复制成功 ✅";
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast("已复制到剪贴板： " + text);
-      } catch (e) {
-        showToast("复制失败（可能非 HTTPS 或权限限制），请手动复制： " + text);
+      const steps = [
+        "SECURE LINK: KEY EXCHANGE…",
+        "VAULT: CHECKSUM VALIDATION…",
+        "AUTH: TOKEN EMISSION…",
+        "AUTH: GRANTED"
+      ];
+      for (const s of steps){
+        logEl.textContent += s + "\n";
+        logEl.scrollTop = logEl.scrollHeight;
+        await sleep(420 + Math.random()*260);
       }
-    });
+      btnLogin.disabled = false;
+      return true;
+    }
 
-    // Progress
-    $("btnProg").addEventListener("click", () => {
-      const p = $("prog");
-      p.value = Math.min(100, Number(p.value) + 10);
-      $("progText").textContent = p.value + "%";
-      if (p.value === 100) showToast("进度条到 100% ✅");
-    });
+    function enterOS(userLabel){
+      who.textContent = userLabel.toUpperCase();
+      loginScreen.style.display = "none";
+      osScreen.style.display = "block";
+      osLog.textContent =
+`WELCOME, ${userLabel.toUpperCase()}.
+> uplink --renew
+LINK OK. TIME SYNCED.
+> scan --deep
+NO THREATS FOUND.
+> hint
+Try clicking Logout to return to Login.`;
+      $("sysStatus").textContent = `Nominal. Session bound to ${userLabel.toUpperCase()} @ ${new Date().toLocaleString()}.`;
+      setStatus("", "");
+      glitch();
+    }
 
-    // Form
-    $("testForm").addEventListener("submit", (e) => {
+    $("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const fd = new FormData(e.target);
-      const obj = Object.fromEntries(fd.entries());
-      obj.agree = fd.get("agree") === "on";
-      showToast("表单已拦截（未提交到服务器）。数据：" + JSON.stringify(obj));
-      console.log("FormData:", obj);
+      const user = $("user").value.trim();
+      const pass = $("pass").value;
+
+      // demo credentials
+      const ok = (user.toLowerCase() === "neo" && pass === "2049") || (user.length >= 2 && pass.length >= 2);
+
+      // Simulate delay regardless
+      await fakeAuth(user || "guest");
+
+      if (!ok){
+        setStatus("认证失败：凭据无效。请重试。", "bad");
+        logEl.textContent += "AUTH: DENIED · INVALID CREDENTIALS\n";
+        glitch();
+        return;
+      }
+
+      setStatus("认证成功：会话已建立。", "good");
+      logEl.textContent += "SESSION: ESTABLISHED\n";
+      await sleep(350);
+      enterOS(user || "guest");
     });
 
-    // Fetch optional
-    $("btnFetch").addEventListener("click", async () => {
-      $("fetchResult").textContent = "请求中...";
-      try {
-        const r = await fetch("/api/ping", { cache: "no-store" });
-        const txt = await r.text();
-        $("fetchResult").textContent = "状态 " + r.status + "：" + txt.slice(0, 200);
-        showToast("Fetch 完成 ✅（看右侧/控制台）");
-      } catch (e) {
-        $("fetchResult").textContent = "请求失败：你可能没有后端 /api/ping（这是正常的）";
-        showToast("Fetch 失败（但页面正常）");
-      }
+    $("btnGuest").addEventListener("click", async () => {
+      $("user").value = "guest";
+      $("pass").value = "********";
+      await fakeAuth("guest");
+      enterOS("guest");
     });
+
+    $("btnLogout").addEventListener("click", () => {
+      osScreen.style.display = "none";
+      loginScreen.style.display = "grid";
+      $("pass").value = "";
+      setStatus("已注销。请重新登录。", "");
+      logEl.textContent += "SESSION: TERMINATED · RETURN TO LOGIN\n";
+      glitch();
+      $("user").focus();
+    });
+
+    // UX: press Enter focuses next field
+    $("user").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") $("pass").focus();
+    });
+
+    // initial focus
+    window.addEventListener("load", () => $("user").focus());
   </script>
 </body>
 </html>
-
