@@ -883,11 +883,7 @@
     center.addEventListener('pointerup', (e) => endPointer(e.pointerId), { passive:true });
     center.addEventListener('pointercancel', (e) => endPointer(e.pointerId), { passive:true });
 
-    // Double-tap on background to reset view
-    let lastBgTap = 0;
-    center.addEventListener('pointerup', (e) => {
-      const p = pointers.get(e.pointerId);
-      // already removed by pointerup handler order? (depends). We'll just check target.
+          // already removed by pointerup handler order? (depends). We'll just check target.
       if(isInteractiveTarget(e.target)) return;
       if(e.pointerType !== 'touch') return;
       const now = performance.now();
