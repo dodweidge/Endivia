@@ -2,15 +2,15 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Macintosh (System 1) Mock · Pixel + Apps</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <title>Macintosh (System 1) Mock · Touch Ready</title>
   <style>
     :root{
-      --stageW: 900; /* 固定“屏幕”逻辑尺寸 */
+      --stageW: 900;
       --stageH: 640;
       --fit: 1;
 
-      --scale: 1.0;   /* UI缩放（View菜单可切换） */
+      --scale: 1.0;
       --ui: 12px;
       --barH: calc(22px * var(--scale));
       --winBorder: 2px;
@@ -24,40 +24,46 @@
       --selText:#fff;
     }
 
-    *{ box-sizing: border-box; }
+    *{ box-sizing:border-box; }
     html,body{ height:100%; }
 
-    body{
+    /* App-like behavior on mobile */
+    html, body{
       margin:0;
       overflow:hidden;
+      overscroll-behavior: none;
+      touch-action: none;
+      -webkit-user-select:none;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
+    body{
       background:
         radial-gradient(1200px 800px at 50% 40%, rgba(255,255,255,.12), transparent 55%),
         radial-gradient(900px 600px at 20% 70%, rgba(255,255,255,.08), transparent 60%),
         linear-gradient(180deg, rgba(0,0,0,.18), transparent 20%, transparent 80%, rgba(0,0,0,.35)),
         repeating-linear-gradient(45deg, rgba(255,255,255,.06) 0 6px, rgba(0,0,0,.04) 6px 12px),
         radial-gradient(circle, rgba(0,0,0,.14) 1px, transparent 1px);
-      background-size: auto, auto, auto, auto, 6px 6px;
+      background-size:auto,auto,auto,auto,6px 6px;
 
-      font-family: "MS Gothic", "SimSun", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      -webkit-font-smoothing: none;
-      -moz-osx-font-smoothing: auto;
+      font-family:"MS Gothic","SimSun",ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+      -webkit-font-smoothing:none;
+      -moz-osx-font-smoothing:auto;
       text-rendering: optimizeSpeed;
 
-      color: #fff;
+      color:#fff;
     }
 
     .center{
-      position: fixed;
-      inset: 0;
-      display:grid;
-      place-items:center;
-      padding: 24px;
+      position:fixed; inset:0;
+      display:grid; place-items:center;
+      padding:24px;
     }
 
     .stageWrap{
       transform: scale(var(--fit));
-      transform-origin: center;
+      transform-origin:center;
       filter:
         drop-shadow(0 26px 0 rgba(0,0,0,.35))
         drop-shadow(0 18px 38px rgba(0,0,0,.35));
@@ -66,11 +72,12 @@
     .stage{
       width: calc(var(--stageW) * 1px);
       height: calc(var(--stageH) * 1px);
-      position: relative;
-      overflow: hidden;
-      border: 5px solid #000;
-      background: #fff;
-      filter: contrast(1.06);
+      position:relative;
+      overflow:hidden;
+      border:5px solid #000;
+      background:#fff;
+      filter:contrast(1.06);
+      touch-action:none;
     }
 
     .stage::after{
@@ -81,17 +88,17 @@
         repeating-linear-gradient(to bottom, rgba(0,0,0,.07) 0 1px, transparent 1px 3px),
         radial-gradient(circle, rgba(0,0,0,.12) 1px, transparent 1px),
         radial-gradient(900px 600px at 50% 45%, rgba(0,0,0,.20), transparent 60%);
-      background-size: auto, 4px 4px, auto;
+      background-size:auto,4px 4px,auto;
       opacity:.55;
       mix-blend-mode:multiply;
     }
 
     .ui{
       position:absolute; inset:0;
-      background:
-        repeating-linear-gradient(45deg, var(--desk1) 0 2px, var(--desk2) 2px 4px);
-      user-select: none;
-      color: var(--bw);
+      background: repeating-linear-gradient(45deg, var(--desk1) 0 2px, var(--desk2) 2px 4px);
+      color:var(--bw);
+      touch-action:none;
+      user-select:none;
     }
     .ui::before{
       content:"";
@@ -100,15 +107,14 @@
       background:
         radial-gradient(circle, rgba(0,0,0,.10) 1px, transparent 1px),
         repeating-linear-gradient(90deg, rgba(0,0,0,.04) 0 1px, transparent 1px 6px);
-      background-size: 6px 6px, 7px 7px;
+      background-size:6px 6px,7px 7px;
       opacity:.16;
       mix-blend-mode:multiply;
     }
 
     /* Menu bar */
     .menubar{
-      position: absolute;
-      left:0; right:0; top:0;
+      position:absolute; left:0; right:0; top:0;
       height: var(--barH);
       background: var(--paper);
       border-bottom: var(--winBorder) solid var(--bw);
@@ -118,7 +124,8 @@
       gap: calc(10px * var(--scale));
       z-index: 9999;
       font-size: calc(var(--ui) * var(--scale));
-      line-height: 1;
+      line-height:1;
+      touch-action:none;
     }
     .menu-left,.menu-right{ display:flex; align-items:center; gap: calc(10px * var(--scale)); }
     .menu-right{ margin-left:auto; gap: calc(12px * var(--scale)); }
@@ -126,39 +133,42 @@
       width: calc(16px * var(--scale));
       height: calc(16px * var(--scale));
       border: var(--winBorder) solid var(--bw);
-      display:grid;
-      place-items:center;
+      display:grid; place-items:center;
       font-weight:700;
       font-size: calc(12px * var(--scale));
       cursor:pointer;
-      background: transparent;
+      background:transparent;
+      touch-action:none;
     }
     .menu-item{
       padding: calc(3px * var(--scale)) calc(6px * var(--scale));
       cursor:pointer;
       border:1px solid transparent;
+      touch-action:none;
     }
     .menu-item.active{ background: var(--bw); color: var(--paper); }
 
     /* Dropdown */
     .dropdown{
-      position: absolute;
+      position:absolute;
       top: calc(var(--barH) - 1px);
       min-width: calc(240px * var(--scale));
       background: var(--paper);
       border: var(--winBorder) solid var(--bw);
       box-shadow: 0 calc(8px * var(--scale)) 0 var(--shadow);
       display:none;
-      z-index: 9998;
+      z-index:9998;
       font-size: calc(var(--ui) * var(--scale));
+      touch-action:none;
     }
     .dropdown .row{
       display:flex;
-      justify-content: space-between;
+      justify-content:space-between;
       align-items:center;
-      padding: calc(6px * var(--scale)) calc(10px * var(--scale));
+      padding: calc(8px * var(--scale)) calc(12px * var(--scale));
       border-bottom: 1px solid rgba(0,0,0,.2);
       cursor:pointer;
+      touch-action:none;
     }
     .dropdown .row:last-child{ border-bottom:0; }
     .dropdown .row:hover{ background: var(--bw); color: var(--paper); }
@@ -172,15 +182,16 @@
       top: var(--barH);
       bottom:0;
       padding: calc(14px * var(--scale));
+      touch-action:none;
     }
 
     /* Icons */
     .icon{
-      position:absolute;
+      position:absolute; /* relative to .desktop */
       width: calc(76px * var(--scale));
       text-align:center;
       cursor: default;
-      touch-action: none;
+      touch-action:none;
     }
     .icon .glyph{
       width: calc(36px * var(--scale));
@@ -188,22 +199,23 @@
       margin: 0 auto calc(6px * var(--scale));
       border: var(--winBorder) solid var(--bw);
       background: var(--paper);
-      display:grid;
-      place-items:center;
+      display:grid; place-items:center;
+      touch-action:none;
     }
     .icon .label{
       display:inline-block;
       padding: calc(2px * var(--scale)) calc(4px * var(--scale));
       font-size: calc(var(--ui) * var(--scale));
       line-height:1.15;
-      background: transparent;
-      color: var(--bw);
+      background:transparent;
+      color:var(--bw);
+      touch-action:none;
     }
     .icon.selected .label{ background: var(--sel); color: var(--selText); }
 
     /* Windows */
     .window{
-      position:absolute;
+      position:absolute; /* relative to .ui */
       background: var(--paper);
       border: var(--winBorder) solid var(--bw);
       box-shadow: 0 calc(10px * var(--scale)) 0 var(--shadow);
@@ -223,20 +235,20 @@
       gap: calc(8px * var(--scale));
       padding: 0 calc(8px * var(--scale));
       cursor: move;
-      background:
-        repeating-linear-gradient(90deg, transparent 0 6px, rgba(0,0,0,.14) 6px 7px);
+      background: repeating-linear-gradient(90deg, transparent 0 6px, rgba(0,0,0,.14) 6px 7px);
+      touch-action:none;
     }
     .closebox{
-      width: calc(14px * var(--scale));
-      height: calc(14px * var(--scale));
+      width: calc(18px * var(--scale)); /* touch larger */
+      height: calc(18px * var(--scale));
       border: var(--winBorder) solid var(--bw);
       background: var(--paper);
       cursor:pointer;
       flex:0 0 auto;
-      display:grid;
-      place-items:center;
-      font-size: calc(10px * var(--scale));
+      display:grid; place-items:center;
+      font-size: calc(12px * var(--scale));
       line-height:1;
+      touch-action:none;
     }
     .wintitle{
       flex:1 1 auto;
@@ -245,9 +257,9 @@
       letter-spacing:.02em;
       font-weight:700;
       padding-right: calc(18px * var(--scale));
-      white-space: nowrap;
+      white-space:nowrap;
       overflow:hidden;
-      text-overflow: ellipsis;
+      text-overflow:ellipsis;
     }
     .content{
       position:relative;
@@ -261,13 +273,13 @@
       position:absolute;
       right: 2px;
       bottom: 2px;
-      width: calc(16px * var(--scale));
-      height: calc(16px * var(--scale));
+      width: calc(20px * var(--scale));
+      height: calc(20px * var(--scale));
       border-left: var(--winBorder) solid var(--bw);
       border-top: var(--winBorder) solid var(--bw);
-      background:
-        repeating-linear-gradient(135deg, transparent 0 3px, rgba(0,0,0,.22) 3px 4px);
-      cursor: nwse-resize;
+      background: repeating-linear-gradient(135deg, transparent 0 3px, rgba(0,0,0,.22) 3px 4px);
+      cursor:nwse-resize;
+      touch-action:none;
     }
     .window.dialog .resize-handle{ display:none; }
 
@@ -283,11 +295,11 @@
       padding: calc(10px * var(--scale));
       overflow:auto;
       user-select:text;
+      -webkit-user-select:text;
     }
     .scrollframe .bar{
       border-left: var(--winBorder) solid var(--bw);
-      background:
-        repeating-linear-gradient(45deg, #fff 0 2px, #eee 2px 4px);
+      background: repeating-linear-gradient(45deg, #fff 0 2px, #eee 2px 4px);
       position:relative;
     }
     .scrollframe .thumb{
@@ -305,24 +317,29 @@
       background: var(--paper);
     }
     .list .item{
-      display:flex; justify-content: space-between;
-      padding: calc(4px * var(--scale)) calc(6px * var(--scale));
-      cursor: default;
+      display:flex;
+      justify-content:space-between;
+      padding: calc(6px * var(--scale)) calc(8px * var(--scale));
+      cursor:default;
+      touch-action:none;
     }
     .list .item:hover{ background: var(--bw); color: var(--paper); }
 
     /* Dialog */
     .dialog{ width: calc(420px * var(--scale)); }
     .btnrow{
-      display:flex; justify-content:flex-end; gap: calc(8px * var(--scale));
+      display:flex;
+      justify-content:flex-end;
+      gap: calc(8px * var(--scale));
       margin-top: calc(10px * var(--scale));
     }
     .btn{
       border: var(--winBorder) solid var(--bw);
       background: var(--paper);
-      padding: calc(6px * var(--scale)) calc(10px * var(--scale));
+      padding: calc(8px * var(--scale)) calc(12px * var(--scale));
       cursor:pointer;
       font-size: calc(var(--ui) * var(--scale));
+      touch-action:none;
     }
     .btn:active{ transform: translateY(1px); }
 
@@ -330,12 +347,12 @@
     .calc{ display:grid; gap: calc(10px * var(--scale)); }
     .calc-display{
       border: var(--winBorder) solid var(--bw);
-      background: #fff;
+      background:#fff;
       padding: calc(8px * var(--scale)) calc(10px * var(--scale));
       font-size: calc(18px * var(--scale));
-      font-weight: 700;
+      font-weight:700;
       text-align:right;
-      letter-spacing: .02em;
+      letter-spacing:.02em;
       height: calc(36px * var(--scale));
       display:flex;
       align-items:center;
@@ -345,26 +362,24 @@
     .calc-keys{
       display:grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: calc(6px * var(--scale));
+      gap: calc(8px * var(--scale));
     }
     .key{
       border: var(--winBorder) solid var(--bw);
-      background: #fff;
-      padding: calc(8px * var(--scale)) 0;
-      font-size: calc(13px * var(--scale));
+      background:#fff;
+      padding: calc(10px * var(--scale)) 0;
+      font-size: calc(14px * var(--scale));
       cursor:pointer;
       text-align:center;
       user-select:none;
+      touch-action:none;
     }
     .key:active{ transform: translateY(1px); }
     .key.wide{ grid-column: span 2; }
-    .key.op{ font-weight: 700; }
+    .key.op{ font-weight:700; }
 
     /* Music Player */
-    .player{
-      display:grid;
-      gap: calc(10px * var(--scale));
-    }
+    .player{ display:grid; gap: calc(10px * var(--scale)); }
     .player-head{
       border: var(--winBorder) solid var(--bw);
       padding: calc(8px * var(--scale));
@@ -374,16 +389,19 @@
     }
     .trackline{
       display:flex;
-      justify-content: space-between;
+      justify-content:space-between;
       gap: calc(10px * var(--scale));
       align-items:center;
       font-weight:700;
     }
-    .trackline .name{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .trackline .state{ font-weight:700; }
+    .trackline .name{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
     .time{
       display:flex;
-      justify-content: space-between;
+      justify-content:space-between;
       font-size: calc(11px * var(--scale));
     }
     .controls{
@@ -392,47 +410,45 @@
       align-items:center;
     }
     .range{
-      width: 100%;
-      -webkit-appearance: none;
-      appearance: none;
-      height: calc(14px * var(--scale));
-      background: #fff;
+      width:100%;
+      -webkit-appearance:none;
+      appearance:none;
+      height: calc(16px * var(--scale));
+      background:#fff;
       border: var(--winBorder) solid #000;
-      outline: none;
-      margin: 0;
+      outline:none;
+      margin:0;
+      touch-action:none;
     }
     .range::-webkit-slider-thumb{
-      -webkit-appearance: none;
-      appearance: none;
-      width: calc(12px * var(--scale));
-      height: calc(18px * var(--scale));
+      -webkit-appearance:none;
+      appearance:none;
+      width: calc(14px * var(--scale));
+      height: calc(20px * var(--scale));
       border: var(--winBorder) solid #000;
-      background: #fff;
-      cursor: pointer;
+      background:#fff;
+      cursor:pointer;
     }
     .range::-moz-range-thumb{
-      width: calc(12px * var(--scale));
-      height: calc(18px * var(--scale));
+      width: calc(14px * var(--scale));
+      height: calc(20px * var(--scale));
       border: var(--winBorder) solid #000;
-      background: #fff;
-      cursor: pointer;
+      background:#fff;
+      cursor:pointer;
     }
     .range::-moz-range-track{
-      height: calc(14px * var(--scale));
-      background: #fff;
-      border: 0;
+      height: calc(16px * var(--scale));
+      background:#fff;
+      border:0;
     }
-    .player-note{
-      font-size: calc(11px * var(--scale));
-    }
+    .player-note{ font-size: calc(11px * var(--scale)); }
 
-    /* 外部提示 */
     .outerTip{
-      position: fixed;
-      left: 18px;
-      bottom: 14px;
-      font-size: 12px;
-      opacity: .88;
+      position:fixed;
+      left:18px;
+      bottom:14px;
+      font-size:12px;
+      opacity:.88;
       color: rgba(255,255,255,.88);
       text-shadow: 0 2px 0 rgba(0,0,0,.55);
       pointer-events:none;
@@ -440,11 +456,10 @@
     .outerTip code{
       background: rgba(0,0,0,.45);
       padding: 2px 6px;
-      border-radius: 6px;
+      border-radius:6px;
       border: 1px solid rgba(255,255,255,.20);
     }
 
-    /* UI size modes */
     body.big .ui{ --scale: 1.25; }
     body.huge .ui{ --scale: 1.55; }
   </style>
@@ -514,7 +529,7 @@
 
           <!-- DESKTOP -->
           <div class="desktop" id="desktop">
-            <div class="icon" id="icon-hd" data-open="finder" style="left: 24px; top: 24px;">
+            <div class="icon" id="icon-hd" data-open="finder" style="left:24px; top:24px;">
               <div class="glyph" aria-hidden="true">
                 <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
                   <rect x="6" y="6" width="24" height="24" fill="#fff" stroke="#000" stroke-width="2"/>
@@ -527,7 +542,7 @@
               <div class="label">Macintosh HD</div>
             </div>
 
-            <div class="icon" id="icon-note" data-open="note" style="left: 24px; top: 122px;">
+            <div class="icon" id="icon-note" data-open="note" style="left:24px; top:122px;">
               <div class="glyph" aria-hidden="true">
                 <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
                   <rect x="8" y="6" width="20" height="24" fill="#fff" stroke="#000" stroke-width="2"/>
@@ -540,7 +555,7 @@
               <div class="label">Note Pad</div>
             </div>
 
-            <div class="icon" id="icon-calc" data-open="calc" style="left: 24px; top: 220px;">
+            <div class="icon" id="icon-calc" data-open="calc" style="left:24px; top:220px;">
               <div class="glyph" aria-hidden="true">
                 <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
                   <rect x="9" y="6" width="18" height="24" fill="#fff" stroke="#000" stroke-width="2"/>
@@ -556,7 +571,7 @@
               <div class="label">Calculator</div>
             </div>
 
-            <div class="icon" id="icon-music" data-open="music" style="left: 24px; top: 318px;">
+            <div class="icon" id="icon-music" data-open="music" style="left:24px; top:318px;">
               <div class="glyph" aria-hidden="true">
                 <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
                   <rect x="8" y="7" width="20" height="22" fill="#fff" stroke="#000" stroke-width="2"/>
@@ -571,7 +586,7 @@
               <div class="label">Music</div>
             </div>
 
-            <div class="icon" id="icon-trash" data-open="trash" style="right: 22px; top: 24px;">
+            <div class="icon" id="icon-trash" data-open="trash" style="left:792px; top:24px;">
               <div class="glyph" aria-hidden="true">
                 <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
                   <rect x="12" y="10" width="12" height="20" fill="#fff" stroke="#000" stroke-width="2"/>
@@ -585,7 +600,7 @@
           </div>
 
           <!-- WINDOWS -->
-          <div class="window visible" id="win-finder" style="left: 140px; top: 80px; width: 540px; height: 360px;">
+          <div class="window visible" id="win-finder" style="left:140px; top:80px; width:540px; height:360px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-finder">×</div>
               <div class="wintitle">Finder</div>
@@ -603,7 +618,7 @@
                     <div class="item" data-open="about"><span>Read Me</span><span class="muted">Text</span></div>
                   </div>
                   <div style="height:14px"></div>
-                  <div class="muted">Tip: 图标可全方向拖动 · 右下角缩放窗口 · Special → Clean Up Desktop</div>
+                  <div class="muted">Touch: tap & hold an icon to open · Drag icons/windows freely · Special → Clean Up Desktop</div>
                 </div>
                 <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
               </div>
@@ -611,40 +626,36 @@
             <div class="resize-handle" data-resize="win-finder" title="Resize"></div>
           </div>
 
-          <div class="window" id="win-note" style="left: 220px; top: 140px; width: 520px; height: 360px;">
+          <div class="window" id="win-note" style="left:220px; top:140px; width:520px; height:360px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-note">×</div>
               <div class="wintitle" id="noteTitle">Note Pad</div>
             </div>
-            <div class="content" style="height: calc(100% - (22px * var(--scale)));">
-              <div class="scrollframe" style="height: calc(100% - 2px);">
-                <div class="pane" style="padding:0; overflow:hidden;">
-                  <textarea id="noteArea" style="
-                    width:100%; height:100%;
-                    border:0; outline:none;
-                    padding: calc(10px * var(--scale));
-                    resize:none;
-                    font: inherit;
-                    font-size: calc(var(--ui) * var(--scale));
-                    line-height:1.45;
-                    background: transparent;
-                    color:#000;
-                  ">Welcome to Macintosh.
+            <div class="content" style="height: calc(100% - (22px * var(--scale))); padding:0;">
+              <textarea id="noteArea" style="
+                width:100%; height:100%;
+                border:0; outline:none;
+                padding: calc(10px * var(--scale));
+                resize:none;
+                font: inherit;
+                font-size: calc(var(--ui) * var(--scale));
+                line-height:1.45;
+                background: transparent;
+                color:#000;
+                user-select:text; -webkit-user-select:text;
+              ">Welcome to Macintosh.
 
-Try:
-- Drag icons in all directions
-- Resize windows (bottom-right)
-- File → Save/Open Note…
+Fixed:
+- Icons drag in all directions (touch-friendly)
+- Windows drag in all directions
+- Clean Up Desktop aligns X & Y
 
-(Ctrl works as ⌘ on Windows.)</textarea>
-                </div>
-                <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
-              </div>
+Music Player loads ./song.mp3</textarea>
             </div>
             <div class="resize-handle" data-resize="win-note" title="Resize"></div>
           </div>
 
-          <div class="window" id="win-calc" style="left: 540px; top: 140px; width: 300px; height: 360px;">
+          <div class="window" id="win-calc" style="left:540px; top:140px; width:300px; height:360px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-calc">×</div>
               <div class="wintitle">Calculator</div>
@@ -652,7 +663,7 @@ Try:
             <div class="content" style="height: calc(100% - (22px * var(--scale)));">
               <div class="calc" style="height:100%;">
                 <div class="calc-display" id="calcDisplay">0</div>
-                <div class="calc-keys">
+                <div class="calc-keys" id="calcKeys">
                   <div class="key" data-k="C">C</div>
                   <div class="key" data-k="BS">⌫</div>
                   <div class="key" data-k="%">%</div>
@@ -685,7 +696,7 @@ Try:
             <div class="resize-handle" data-resize="win-calc" title="Resize"></div>
           </div>
 
-          <div class="window" id="win-music" style="left: 420px; top: 220px; width: 420px; height: 240px;">
+          <div class="window" id="win-music" style="left:420px; top:220px; width:420px; height:240px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-music">×</div>
               <div class="wintitle">Music Player</div>
@@ -705,21 +716,20 @@ Try:
                 </div>
 
                 <div class="controls">
-                  <button class="btn" id="musicPlay">Play</button>
-                  <button class="btn" id="musicPause">Pause</button>
+                  <button class="btn" id="musicPlay" type="button">Play</button>
+                  <button class="btn" id="musicPause" type="button">Pause</button>
                   <div class="muted" style="margin-left:auto;" id="musicStatus">Ready</div>
                 </div>
 
                 <div class="player-note muted">
-                  需要把 <b>song.mp3</b> 放在和本 HTML 同目录（GitHub Pages：仓库根目录同级）。
-                  <span style="white-space:nowrap;">（浏览器可能要求先点一次按钮才允许播放）</span>
+                  Put <b>song.mp3</b> next to this HTML file (same folder).
                 </div>
               </div>
             </div>
             <div class="resize-handle" data-resize="win-music" title="Resize"></div>
           </div>
 
-          <div class="window dialog" id="win-about" style="left: 260px; top: 120px;">
+          <div class="window dialog" id="win-about" style="left:260px; top:120px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-about">×</div>
               <div class="wintitle">About the Macintosh</div>
@@ -727,23 +737,23 @@ Try:
             <div class="content">
               <div style="display:flex; gap:12px; align-items:flex-start;">
                 <div style="width:64px; height:64px; border:var(--winBorder) solid #000; background:#fff; display:grid; place-items:center;">
-                  <div style="font-weight:700; font-size: 26px;"></div>
+                  <div style="font-weight:700; font-size:26px;"></div>
                 </div>
                 <div>
                   <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
-                  <div class="muted">System 1 style mock (HTML/CSS/JS)</div>
+                  <div class="muted">System 1 style mock (single-file)</div>
                   <div style="height:8px"></div>
-                  <div>Enhancements: pixel+dither, icon drag/cleanup, window snap/resize</div>
-                  <div>Apps: Note, Calculator, Music Player (song.mp3)</div>
+                  <div>Touch ready · Icon/Window drag XY · Cleanup XY</div>
+                  <div>Apps: Note, Calculator, Music (song.mp3)</div>
                 </div>
               </div>
               <div class="btnrow">
-                <button class="btn" data-action="closeAbout">OK</button>
+                <button class="btn" type="button" data-action="closeAbout">OK</button>
               </div>
             </div>
           </div>
 
-          <div class="window dialog" id="win-trash" style="left: 360px; top: 160px;">
+          <div class="window dialog" id="win-trash" style="left:360px; top:160px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-trash">×</div>
               <div class="wintitle">Trash</div>
@@ -751,12 +761,12 @@ Try:
             <div class="content">
               <div class="muted">Trash is empty.</div>
               <div class="btnrow">
-                <button class="btn" data-close="win-trash">Close</button>
+                <button class="btn" type="button" data-close="win-trash">Close</button>
               </div>
             </div>
           </div>
 
-          <div class="window dialog" id="win-open" style="left: 260px; top: 160px;">
+          <div class="window dialog" id="win-open" style="left:260px; top:160px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-open">×</div>
               <div class="wintitle">Open</div>
@@ -766,13 +776,13 @@ Try:
               <div style="height:8px"></div>
               <div class="list" id="openList"></div>
               <div class="btnrow">
-                <button class="btn" data-action="doOpen">Open</button>
-                <button class="btn" data-close="win-open">Cancel</button>
+                <button class="btn" type="button" data-action="doOpen">Open</button>
+                <button class="btn" type="button" data-close="win-open">Cancel</button>
               </div>
             </div>
           </div>
 
-          <div class="window dialog" id="win-alert" style="left: 280px; top: 200px;">
+          <div class="window dialog" id="win-alert" style="left:280px; top:200px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-alert">×</div>
               <div class="wintitle" id="alertTitle">Alert</div>
@@ -780,7 +790,7 @@ Try:
             <div class="content">
               <div id="alertMsg">Message</div>
               <div class="btnrow">
-                <button class="btn" data-close="win-alert">OK</button>
+                <button class="btn" type="button" data-close="win-alert">OK</button>
               </div>
             </div>
           </div>
@@ -791,15 +801,14 @@ Try:
   </div><!-- /center -->
 
   <div class="outerTip">
-    图标可全向拖动 · <code>Ctrl+S</code> 保存 Note · <code>Ctrl+W</code> 关闭前台 · Music 播放 <code>song.mp3</code>
+    Touch: long-press icon to open · Drag icons/windows · Music plays <code>song.mp3</code>
   </div>
 
   <script>
-    // ===== Fit stage to viewport while keeping fixed logical size =====
+    // ===== Fit stage to viewport =====
     (function fitStage(){
       const stageW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stageW')) || 900;
       const stageH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stageH')) || 640;
-
       function apply(){
         const pad = 48;
         const vw = window.innerWidth - pad;
@@ -807,12 +816,12 @@ Try:
         const s = Math.min(vw / stageW, vh / stageH, 1);
         document.documentElement.style.setProperty('--fit', s.toFixed(4));
       }
-      window.addEventListener('resize', apply);
+      window.addEventListener('resize', apply, {passive:true});
       apply();
     })();
 
     // Helpers
-    const $ = (sel, root=document) => root.querySelector(sel);
+    const $  = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 
     const ui = $("#ui");
@@ -826,9 +835,38 @@ Try:
     function getFit(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fit')) || 1; }
     function getScale(){ return parseFloat(getComputedStyle(ui).getPropertyValue('--scale')) || 1; }
 
-    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+    function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
     function snap(n, step){ return Math.round(n / step) * step; }
+
     function stageRect(){ return stage.getBoundingClientRect(); }
+    function uiRect(){ return ui.getBoundingClientRect(); }
+    function desktopRect(){ return desktop.getBoundingClientRect(); }
+
+    // Touch open helpers
+    function addTapOpen(el, onOpen){
+      let lastT = 0;
+      el.addEventListener("pointerup", (e) => {
+        if(e.pointerType !== "touch") return;
+        const now = performance.now();
+        if(now - lastT < 320){
+          onOpen();
+          lastT = 0;
+        }else{
+          lastT = now;
+        }
+      }, {passive:true});
+    }
+
+    function addLongPressOpen(el, onOpen){
+      let timer = null;
+      el.addEventListener("pointerdown", (e) => {
+        if(e.pointerType !== "touch") return;
+        timer = setTimeout(() => { onOpen(); }, 450);
+      }, {passive:true});
+      el.addEventListener("pointermove", () => { if(timer) clearTimeout(timer); timer=null; }, {passive:true});
+      el.addEventListener("pointerup",   () => { if(timer) clearTimeout(timer); timer=null; }, {passive:true});
+      el.addEventListener("pointercancel",() => { if(timer) clearTimeout(timer); timer=null; }, {passive:true});
+    }
 
     // Clock
     function pad2(n){ return String(n).padStart(2,"0"); }
@@ -883,47 +921,57 @@ Try:
         e.stopPropagation();
       });
     });
-    // Bring window to front
-    $$(".window", ui).forEach(win => win.addEventListener("pointerdown", () => setFront(win)));
+    $$("[data-close='win-trash']").forEach(btn=>{
+      btn.addEventListener("click",(e)=>{ hideWin("win-trash"); e.stopPropagation(); });
+    });
 
-    // States: window drag / resize / icon drag
+    // Bring window to front
+    $$(".window", ui).forEach(win => win.addEventListener("pointerdown", () => setFront(win), {passive:true}));
+
+    // Drag states
     let dragWin = null;
     let resizeWin = null;
     let dragIcon = null;
 
-    // Window dragging + snapping
+    const DRAG_THRESHOLD = 6; // px (screen space)
+
+    // ===== Window drag (FULL XY) =====
     function onPointerDownTitle(e){
       const win = e.currentTarget.closest(".window");
       if(e.target.closest(".closebox")) return;
       setFront(win);
 
-      const sr = stageRect();
-      const rect = win.getBoundingClientRect();
       const fit = getFit();
+      const ur = uiRect();
+      const rect = win.getBoundingClientRect();
 
       dragWin = {
         win,
         pointerId: e.pointerId,
         startX: e.clientX,
         startY: e.clientY,
-        origL: (rect.left - sr.left) / fit,
-        origT: (rect.top  - sr.top ) / fit,
+        origL: (rect.left - ur.left) / fit,
+        origT: (rect.top  - ur.top ) / fit,
         fit,
+        moved: false
       };
-      win.setPointerCapture?.(e.pointerId);
-    }
-    $$(".window .titlebar", ui).forEach(tb => tb.addEventListener("pointerdown", onPointerDownTitle));
 
-    // Window resizing + snapping
+      win.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    $$(".window .titlebar", ui).forEach(tb => tb.addEventListener("pointerdown", onPointerDownTitle, {passive:false}));
+
+    // ===== Window resize =====
     function onPointerDownResize(e){
       const id = e.currentTarget.getAttribute("data-resize");
       const win = document.getElementById(id);
       if(!win) return;
       setFront(win);
 
-      const sr = stageRect();
-      const rect = win.getBoundingClientRect();
       const fit = getFit();
+      const ur = uiRect();
+      const rect = win.getBoundingClientRect();
 
       resizeWin = {
         win,
@@ -932,32 +980,28 @@ Try:
         startY: e.clientY,
         origW: rect.width / fit,
         origH: rect.height / fit,
-        left: (rect.left - sr.left) / fit,
-        top:  (rect.top  - sr.top ) / fit,
-        fit
+        left: (rect.left - ur.left) / fit,
+        top:  (rect.top  - ur.top ) / fit,
+        fit,
+        moved:false
       };
+
       win.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
       e.stopPropagation();
     }
-    $$(".resize-handle", ui).forEach(h => h.addEventListener("pointerdown", onPointerDownResize));
+    $$(".resize-handle", ui).forEach(h => h.addEventListener("pointerdown", onPointerDownResize, {passive:false}));
 
-    // Desktop icon selection
+    // ===== Icon drag (FULL XY, desktop coord) =====
     function clearIconSelection(){ $$(".icon", ui).forEach(i => i.classList.remove("selected")); }
-    desktop.addEventListener("pointerdown", (e) => {
-      if(!e.target.closest(".icon") && !e.target.closest(".window")){
-        clearIconSelection();
-        closeMenus();
-      }
-    });
 
-    // Icon dragging (全方向) + snapping
     function onPointerDownIcon(e){
       const icon = e.currentTarget;
       clearIconSelection();
       icon.classList.add("selected");
 
       const fit = getFit();
-      const sr = stageRect();
+      const dr = desktopRect();
       const rect = icon.getBoundingClientRect();
 
       dragIcon = {
@@ -965,153 +1009,18 @@ Try:
         pointerId: e.pointerId,
         startX: e.clientX,
         startY: e.clientY,
-        origL: (rect.left - sr.left) / fit,
-        origT: (rect.top  - sr.top ) / fit,
-        fit
+        origL: (rect.left - dr.left) / fit,
+        origT: (rect.top  - dr.top ) / fit,
+        fit,
+        moved:false
       };
-      icon.setPointerCapture?.(e.pointerId);
 
-      // 防止拖动时触发文本选择等
+      icon.setPointerCapture?.(e.pointerId);
       e.preventDefault();
       e.stopPropagation();
     }
 
-    // 双击打开
-    $$(".icon", ui).forEach(icon => {
-      icon.addEventListener("pointerdown", onPointerDownIcon);
-      icon.addEventListener("dblclick", () => {
-        const open = icon.getAttribute("data-open");
-        if(open) openThing(open);
-      });
-    });
-
-    // 统一 pointermove：优先 resize → win drag → icon drag
-    window.addEventListener("pointermove", (e) => {
-      // Resize
-      if(resizeWin && e.pointerId === resizeWin.pointerId){
-        const fit = resizeWin.fit;
-        const dx = (e.clientX - resizeWin.startX) / fit;
-        const dy = (e.clientY - resizeWin.startY) / fit;
-
-        const sr = stageRect();
-        const sw = sr.width / fit;
-        const sh = sr.height / fit;
-
-        const w = resizeWin.win;
-        const minW = parseFloat(getComputedStyle(w).minWidth) || 240;
-        const minH = parseFloat(getComputedStyle(w).minHeight) || 130;
-
-        const scale = getScale();
-        const step = Math.max(6, Math.round(8 * scale));
-
-        const maxW = sw - resizeWin.left - 4;
-        const maxH = sh - resizeWin.top - 4;
-
-        let nw = clamp(resizeWin.origW + dx, minW, maxW);
-        let nh = clamp(resizeWin.origH + dy, minH, maxH);
-
-        nw = snap(nw, step);
-        nh = snap(nh, step);
-
-        nw = clamp(nw, minW, maxW);
-        nh = clamp(nh, minH, maxH);
-
-        w.style.width = nw + "px";
-        w.style.height = nh + "px";
-        return;
-      }
-
-      // Window drag
-      if(dragWin && e.pointerId === dragWin.pointerId){
-        const fit = dragWin.fit;
-        const dx = (e.clientX - dragWin.startX) / fit;
-        const dy = (e.clientY - dragWin.startY) / fit;
-
-        const w = dragWin.win;
-        const sr = stageRect();
-        const sw = sr.width / fit;
-        const sh = sr.height / fit;
-
-        const bw = w.offsetWidth;
-        const bh = w.offsetHeight;
-
-        const scale = getScale();
-        const step = Math.max(6, Math.round(8 * scale));
-        const snapDist = Math.max(10, Math.round(12 * scale));
-
-        let left = dragWin.origL + dx;
-        let top  = dragWin.origT + dy;
-
-        const topEdge = parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 4;
-
-        const maxL = sw - bw - 4;
-        const maxT = sh - bh - 4;
-
-        // snap edges
-        if (Math.abs(left - 4) < snapDist) left = 4;
-        if (Math.abs(top - topEdge) < snapDist) top = topEdge;
-        if (Math.abs(left - maxL) < snapDist) left = maxL;
-        if (Math.abs(top - maxT) < snapDist) top = maxT;
-
-        // grid
-        left = snap(left, step);
-        top  = snap(top, step);
-
-        left = clamp(left, 4, maxL);
-        top  = clamp(top, topEdge, maxT);
-
-        w.style.left = left + "px";
-        w.style.top  = top + "px";
-        return;
-      }
-
-      // Icon drag (全方向)
-      if(dragIcon && e.pointerId === dragIcon.pointerId){
-        const fit = dragIcon.fit;
-        const dx = (e.clientX - dragIcon.startX) / fit;
-        const dy = (e.clientY - dragIcon.startY) / fit;
-
-        const icon = dragIcon.icon;
-        const sr = stageRect();
-        const sw = sr.width / fit;
-        const sh = sr.height / fit;
-
-        const scale = getScale();
-        const step = Math.max(8, Math.round(10 * scale));
-        const topMin = parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 10;
-
-        const bw = icon.offsetWidth;
-        const bh = icon.offsetHeight;
-
-        let left = dragIcon.origL + dx;
-        let top  = dragIcon.origT + dy;
-
-        left = snap(left, step);
-        top  = snap(top, step);
-
-        left = clamp(left, 6, sw - bw - 6);
-        top  = clamp(top, topMin, sh - bh - 6);
-
-        icon.style.left = left + "px";
-        icon.style.top  = top + "px";
-      }
-    });
-
-    // pointerup 清理状态
-    window.addEventListener("pointerup", (e) => {
-      if(resizeWin && e.pointerId === resizeWin.pointerId) resizeWin = null;
-      if(dragWin && e.pointerId === dragWin.pointerId) dragWin = null;
-      if(dragIcon && e.pointerId === dragIcon.pointerId) dragIcon = null;
-    });
-
-    // Finder list open
-    $("#finderList").addEventListener("dblclick", (e) => {
-      const item = e.target.closest(".item");
-      if(!item) return;
-      const open = item.getAttribute("data-open");
-      if(open) openThing(open);
-    });
-
+    // Open dispatcher
     function openThing(key){
       switch(key){
         case "finder": showWin("win-finder"); break;
@@ -1124,7 +1033,176 @@ Try:
       }
     }
 
-    // Menus
+    $$(".icon", ui).forEach(icon => {
+      icon.addEventListener("pointerdown", onPointerDownIcon, {passive:false});
+
+      // Desktop open: mouse dblclick
+      icon.addEventListener("dblclick", () => {
+        const open = icon.getAttribute("data-open");
+        if(open) openThing(open);
+      });
+
+      // Touch: double-tap + long-press
+      addTapOpen(icon, () => {
+        const open = icon.getAttribute("data-open");
+        if(open) openThing(open);
+      });
+      addLongPressOpen(icon, () => {
+        const open = icon.getAttribute("data-open");
+        if(open) openThing(open);
+      });
+    });
+
+    // Desktop click clears selection/menus
+    desktop.addEventListener("pointerdown", (e) => {
+      if(!e.target.closest(".icon") && !e.target.closest(".window")){
+        clearIconSelection();
+        closeMenus();
+      }
+    }, {passive:true});
+
+    // Finder list: single tap/click open (better for touch)
+    $("#finderList").addEventListener("click", (e) => {
+      const item = e.target.closest(".item");
+      if(!item) return;
+      const open = item.getAttribute("data-open");
+      if(open) openThing(open);
+    });
+
+    // Unified pointermove (non-passive to allow preventDefault when needed)
+    window.addEventListener("pointermove", (e) => {
+      // Resize
+      if(resizeWin && e.pointerId === resizeWin.pointerId){
+        const fit = resizeWin.fit;
+        const dxS = (e.clientX - resizeWin.startX);
+        const dyS = (e.clientY - resizeWin.startY);
+        if(!resizeWin.moved && Math.hypot(dxS, dyS) < DRAG_THRESHOLD) return;
+        resizeWin.moved = true;
+
+        const dx = dxS / fit;
+        const dy = dyS / fit;
+
+        const ur = uiRect();
+        const uw = ur.width / fit;
+        const uh = ur.height / fit;
+
+        const w = resizeWin.win;
+        const minW = parseFloat(getComputedStyle(w).minWidth) || 240;
+        const minH = parseFloat(getComputedStyle(w).minHeight) || 130;
+
+        const scale = getScale();
+        const step = Math.max(6, Math.round(8 * scale));
+
+        const maxW = uw - resizeWin.left - 4;
+        const maxH = uh - resizeWin.top - 4;
+
+        let nw = clamp(resizeWin.origW + dx, minW, maxW);
+        let nh = clamp(resizeWin.origH + dy, minH, maxH);
+
+        nw = snap(nw, step);
+        nh = snap(nh, step);
+
+        w.style.width = nw + "px";
+        w.style.height = nh + "px";
+        e.preventDefault();
+        return;
+      }
+
+      // Window drag
+      if(dragWin && e.pointerId === dragWin.pointerId){
+        const fit = dragWin.fit;
+        const dxS = (e.clientX - dragWin.startX);
+        const dyS = (e.clientY - dragWin.startY);
+        if(!dragWin.moved && Math.hypot(dxS, dyS) < DRAG_THRESHOLD) return;
+        dragWin.moved = true;
+
+        const dx = dxS / fit;
+        const dy = dyS / fit;
+
+        const w = dragWin.win;
+
+        const ur = uiRect();
+        const uw = ur.width / fit;
+        const uh = ur.height / fit;
+
+        const bw = w.offsetWidth;
+        const bh = w.offsetHeight;
+
+        const scale = getScale();
+        const step = Math.max(6, Math.round(8 * scale));
+        const snapDist = Math.max(10, Math.round(12 * scale));
+
+        let left = dragWin.origL + dx;
+        let top  = dragWin.origT + dy;
+
+        const minL = 4;
+        const minT = 4;
+        const maxL = uw - bw - 4;
+        const maxT = uh - bh - 4;
+
+        if(Math.abs(left - minL) < snapDist) left = minL;
+        if(Math.abs(top  - minT) < snapDist) top  = minT;
+        if(Math.abs(left - maxL) < snapDist) left = maxL;
+        if(Math.abs(top  - maxT) < snapDist) top  = maxT;
+
+        left = snap(left, step);
+        top  = snap(top, step);
+
+        left = clamp(left, minL, maxL);
+        top  = clamp(top,  minT, maxT);
+
+        w.style.left = left + "px";
+        w.style.top  = top  + "px";
+        e.preventDefault();
+        return;
+      }
+
+      // Icon drag (desktop coord)
+      if(dragIcon && e.pointerId === dragIcon.pointerId){
+        const fit = dragIcon.fit;
+        const dxS = (e.clientX - dragIcon.startX);
+        const dyS = (e.clientY - dragIcon.startY);
+        if(!dragIcon.moved && Math.hypot(dxS, dyS) < DRAG_THRESHOLD) return;
+        dragIcon.moved = true;
+
+        const dx = dxS / fit;
+        const dy = dyS / fit;
+
+        const icon = dragIcon.icon;
+
+        const dr = desktopRect();
+        const dw = dr.width / fit;
+        const dh = dr.height / fit;
+
+        const scale = getScale();
+        const step = Math.max(8, Math.round(10 * scale));
+
+        const bw = icon.offsetWidth;
+        const bh = icon.offsetHeight;
+
+        let left = dragIcon.origL + dx;
+        let top  = dragIcon.origT + dy;
+
+        left = snap(left, step);
+        top  = snap(top, step);
+
+        left = clamp(left, 6, dw - bw - 6);
+        top  = clamp(top,  6, dh - bh - 6);
+
+        icon.style.left = left + "px";
+        icon.style.top  = top  + "px";
+        e.preventDefault();
+      }
+    }, {passive:false});
+
+    // pointerup clears state
+    window.addEventListener("pointerup", (e) => {
+      if(resizeWin && e.pointerId === resizeWin.pointerId) resizeWin = null;
+      if(dragWin   && e.pointerId === dragWin.pointerId)   dragWin = null;
+      if(dragIcon  && e.pointerId === dragIcon.pointerId)  dragIcon = null;
+    }, {passive:true});
+
+    // ===== Menus =====
     const menus = {
       apple: $("#dd-apple"),
       file: $("#dd-file"),
@@ -1157,6 +1235,7 @@ Try:
       const sr = stageRect();
       const r = anchorEl.getBoundingClientRect();
       const fit = getFit();
+
       dd.style.left = Math.max(6, (r.left - sr.left) / fit) + "px";
       dd.style.display = "block";
     }
@@ -1179,25 +1258,26 @@ Try:
     ui.addEventListener("pointerdown", (e) => {
       if(e.target.closest(".dropdown") || e.target.closest(".menubar")) return;
       closeMenus();
-    });
+    }, {passive:true});
 
-    // Dialog helper
     function alertBox(title, msg){
       $("#alertTitle").textContent = title;
       $("#alertMsg").textContent = msg;
       showWin("win-alert");
     }
 
-    // Note (localStorage)
+    // ===== Note (localStorage) =====
     const NOTE_KEY = "mac1_note_text";
     const NOTE_TIME = "mac1_note_time";
+
     function hasSavedNote(){ return localStorage.getItem(NOTE_KEY) != null; }
+
     function saveNote(){
       const txt = $("#noteArea")?.value ?? "";
       localStorage.setItem(NOTE_KEY, txt);
       localStorage.setItem(NOTE_TIME, new Date().toISOString());
       $("#noteTitle").textContent = "Note Pad — Saved";
-      alertBox("Save", "Document saved to disk.");
+      alertBox("Save", "Document saved to localStorage.");
     }
 
     function openNoteDialog(){
@@ -1236,6 +1316,7 @@ Try:
     function doOpen(){
       const sel = $("#openList").dataset.selected || "factory";
       showWin("win-note");
+
       if(sel === "factory"){
         $("#noteArea").value =
 `Welcome to Macintosh.
@@ -1243,7 +1324,7 @@ Try:
 Use File → Save Note to store this note.
 Use File → Open Note… to load it back.
 
-(You can type here.)`;
+(Touch-friendly single file.)`;
         $("#noteTitle").textContent = "Note Pad";
       }else if(sel === "saved"){
         const txt = localStorage.getItem(NOTE_KEY);
@@ -1254,37 +1335,38 @@ Use File → Open Note… to load it back.
           $("#noteTitle").textContent = "Note Pad — Saved";
         }
       }
+
       hideWin("win-open");
       $("#noteArea")?.focus();
     }
 
-    // Clean up desktop (真正排列图标)
+    // ===== Clean Up Desktop (FIXED XY, desktop coord) =====
     function cleanUpDesktop(){
       const fit = getFit();
-      const sr = stageRect();
-      const sw = sr.width / fit;
-      const sh = sr.height / fit;
+      const dr = desktopRect();
+      const dw = dr.width / fit;
+      const dh = dr.height / fit;
 
       const scale = getScale();
-      const topMin = parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 10;
-
       const icons = $$(".icon", ui);
       const trash = $("#icon-trash");
 
-      // trash 固定右上
+      icons.forEach(i => { i.style.right = "auto"; });
+
+      const margin = Math.round(12 * scale);
+      const colW   = Math.round(92 * scale);
+      const rowH   = Math.round(96 * scale);
+
+      const iconW = Math.round(76 * scale);
+      const iconH = Math.round(80 * scale);
+
       if(trash){
-        const w = trash.offsetWidth;
-        trash.style.left = (sw - w - 26) + "px";
-        trash.style.top  = (topMin + 14) + "px";
+        trash.style.left = (dw - iconW - margin) + "px";
+        trash.style.top  = margin + "px";
       }
 
-      // 其他从左上往下排
-      const leftX = 24;
-      let x = leftX;
-      let y = topMin + 14;
-
-      const stepY = Math.round(96 * scale);
-      const stepX = Math.round(92 * scale);
+      let x = margin;
+      let y = margin;
 
       icons
         .filter(i => i !== trash)
@@ -1292,55 +1374,27 @@ Use File → Open Note… to load it back.
         .forEach(icon => {
           icon.style.left = x + "px";
           icon.style.top  = y + "px";
-          y += stepY;
-          if(y > sh - 120){
-            y = topMin + 14;
-            x += stepX;
+
+          y += rowH;
+
+          if(y + iconH > dh - margin){
+            y = margin;
+            x += colW;
+          }
+          if(x + iconW > dw - margin){
+            x = margin;
           }
         });
 
       beep();
     }
 
-    // Dropdown actions
-    function restoreAbout(){
-      $("#win-about .wintitle").textContent = "About the Macintosh";
-      $("#win-about .content").innerHTML = `
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <div style="width:64px; height:64px; border:var(--winBorder) solid #000; background:#fff; display:grid; place-items:center;">
-            <div style="font-weight:700; font-size: 26px;"></div>
-          </div>
-          <div>
-            <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
-            <div class="muted">System 1 style mock (HTML/CSS/JS)</div>
-            <div style="height:8px"></div>
-            <div>Apps: Note, Calculator, Music Player (song.mp3)</div>
-          </div>
-        </div>
-        <div class="btnrow">
-          <button class="btn" data-action="closeAbout">OK</button>
-        </div>`;
-      bindDialogButtons();
-    }
-    function bindDialogButtons(){
-      $$("#win-about [data-action]").forEach(btn=>{
-        btn.onclick = (e) => {
-          applyAction(btn.getAttribute("data-action"));
-          e.stopPropagation();
-        };
-      });
-    }
-    bindDialogButtons();
-
+    // ===== Dropdown actions =====
     function applyAction(act){
       switch(act){
         case "about": showWin("win-about"); break;
         case "openFinder": showWin("win-finder"); break;
-        case "openNote":
-          showWin("win-note");
-          $("#noteTitle").textContent = "Note Pad";
-          setTimeout(()=>$("#noteArea")?.focus(), 50);
-          break;
+        case "openNote": showWin("win-note"); setTimeout(()=>$("#noteArea")?.focus(), 50); break;
         case "openCalc": showWin("win-calc"); break;
         case "openMusic": showWin("win-music"); break;
 
@@ -1379,11 +1433,9 @@ Use File → Open Note… to load it back.
           break;
 
         case "closeAbout":
-          restoreAbout();
           hideWin("win-about");
           break;
 
-        case "beep":
         default:
           beep();
       }
@@ -1408,7 +1460,7 @@ Use File → Open Note… to load it back.
       });
     });
 
-    // Keyboard shortcuts (Windows用Ctrl模拟⌘)
+    // Keyboard shortcuts (Windows use Ctrl as ⌘)
     window.addEventListener("keydown", (e) => {
       const cmd = e.ctrlKey || e.metaKey;
 
@@ -1498,26 +1550,12 @@ Use File → Open Note… to load it back.
       if(k === "+" || k === "-" || k === "*" || k === "/") return calcOperator(k);
       if(k === "=") return calcEquals();
     }
-    $("#win-calc").addEventListener("click", (e) => {
+    $("#calcKeys").addEventListener("click", (e) => {
       const btn = e.target.closest(".key");
       if(!btn) return;
       const k = btn.getAttribute("data-k");
       if(k) calcPress(k);
     });
-    window.addEventListener("keydown", (e) => {
-      const calcVisible = $("#win-calc").classList.contains("visible");
-      if(!calcVisible) return;
-
-      const key = e.key;
-      if(key >= "0" && key <= "9"){ e.preventDefault(); calcInputDigit(key); return; }
-      if(key === "."){ e.preventDefault(); calcInputDot(); return; }
-      if(key === "+" || key === "-" || key === "*" || key === "/"){ e.preventDefault(); calcOperator(key); return; }
-      if(key === "Enter" || key === "="){ e.preventDefault(); calcEquals(); return; }
-      if(key === "Backspace"){ e.preventDefault(); calcBackspace(); return; }
-      if(key === "Escape"){ e.preventDefault(); calcClear(); return; }
-      if(key === "%"){ e.preventDefault(); calcPercent(); return; }
-    });
-    calcRender();
 
     // ===== Music Player logic =====
     const music = {
@@ -1550,88 +1588,46 @@ Use File → Open Note… to load it back.
       }
       music.time.textContent = fmtTime(a.currentTime || 0);
       music.dur.textContent = fmtTime(d || 0);
-
-      if(a.paused) music.state.textContent = "STOP";
-      else music.state.textContent = "PLAY";
+      music.state.textContent = a.paused ? "STOP" : "PLAY";
     }
 
-    music.audio.addEventListener("loadedmetadata", () => {
-      setMusicStatus("Loaded");
-      syncMusicUI();
-    });
-    music.audio.addEventListener("timeupdate", () => syncMusicUI());
+    music.audio.addEventListener("loadedmetadata", () => { setMusicStatus("Loaded"); syncMusicUI(); });
+    music.audio.addEventListener("timeupdate", syncMusicUI);
     music.audio.addEventListener("play", () => { setMusicStatus("Playing"); syncMusicUI(); });
     music.audio.addEventListener("pause", () => { setMusicStatus("Paused"); syncMusicUI(); });
     music.audio.addEventListener("ended", () => { setMusicStatus("Ended"); syncMusicUI(); });
     music.audio.addEventListener("error", () => {
       setMusicStatus("Cannot load song.mp3");
-      alertBox("Music Player", "无法加载 song.mp3。请确认它与本 HTML 同目录，并已正确上传到站点。");
+      alertBox("Music Player", "Cannot load song.mp3. Put it next to this HTML file (same folder) and upload it.");
     });
 
     async function musicPlay(){
       try{
         await music.audio.play();
       }catch(err){
-        // 常见：未经过用户手势被阻止
         setMusicStatus("Playback blocked");
-        alertBox("Music Player", "浏览器阻止了播放（需要用户手势）。请先点一次 Play。");
+        alertBox("Music Player", "Playback was blocked. Tap Play again (browser requires a user gesture).");
       }
     }
     function musicPause(){ music.audio.pause(); }
 
-    music.playBtn.addEventListener("click", () => musicPlay());
-    music.pauseBtn.addEventListener("click", () => musicPause());
+    music.playBtn.addEventListener("click", musicPlay);
+    music.pauseBtn.addEventListener("click", musicPause);
 
     music.seek.addEventListener("input", () => {
       music.seeking = true;
       const t = parseFloat(music.seek.value);
-      if(Number.isFinite(t)) {
+      if(Number.isFinite(t)){
         music.audio.currentTime = t;
         music.time.textContent = fmtTime(t);
       }
-    });
+    }, {passive:true});
     music.seek.addEventListener("change", () => {
       music.seeking = false;
       syncMusicUI();
-    });
+    }, {passive:true});
 
-    // 可选：音乐快捷键（当音乐窗口可见时生效）
-    window.addEventListener("keydown", (e) => {
-      const visible = $("#win-music").classList.contains("visible");
-      if(!visible) return;
-      if(e.key === " "){
-        e.preventDefault();
-        if(music.audio.paused) musicPlay(); else musicPause();
-      }
-      if(e.key === "ArrowLeft"){
-        music.audio.currentTime = Math.max(0, (music.audio.currentTime || 0) - 5);
-        syncMusicUI();
-      }
-      if(e.key === "ArrowRight"){
-        const d = music.audio.duration || 0;
-        music.audio.currentTime = Math.min(d || 0, (music.audio.currentTime || 0) + 5);
-        syncMusicUI();
-      }
-    });
-
-    // Dropdown action binding for about dialog button
-    function applyActionWrapper(act){
-      if(act === "closeAbout"){
-        restoreAbout();
-        hideWin("win-about");
-        closeMenus();
-        return;
-      }
-      applyAction(act);
-    }
-    $$("#win-about [data-action]").forEach(btn=>{
-      btn.onclick = (e) => {
-        applyActionWrapper(btn.getAttribute("data-action"));
-        e.stopPropagation();
-      };
-    });
-
-    // Init
+    // Start
     showWin("win-finder");
     setFront($("#win-finder"));
     syncMusicUI();
