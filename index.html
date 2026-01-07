@@ -3,86 +3,135 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Macintosh (System 1) Mock</title>
+  <title>Macintosh (System 1) Mock · Centered</title>
   <style>
     :root{
-      --scale: 1.0;                 /* 你可以改成 1.5 / 2.0 */
-      --ui: 12px;                   /* 基础字号（会再乘 scale） */
+      /* 逻辑尺寸（固定）——界面就是这块大小 */
+      --stageW: 900; /* px */
+      --stageH: 640; /* px */
+      --fit: 1;
+
+      --scale: 1.0;                 /* UI 缩放（由 fit * scale 最终决定） */
+      --ui: 12px;
       --barH: calc(22px * var(--scale));
       --winBorder: 2px;
-      --bw: #000;
-      --paper: #fff;
-      --desk1: #e9e9e9;
-      --desk2: #d9d9d9;
+
+      --bw:#000;
+      --paper:#fff;
+      --desk1:#e9e9e9;
+      --desk2:#d9d9d9;
       --shadow: rgba(0,0,0,.35);
-      --z: 10;
-      --focus: #000;
-      --inactive: rgba(0,0,0,.45);
-      --sel: #000;
-      --selText: #fff;
+      --sel:#000;
+      --selText:#fff;
     }
 
     *{ box-sizing: border-box; }
-    html,body{ height: 100%; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      background:
-        /* 经典灰色抖动(dither)桌面 */
-        repeating-linear-gradient(45deg, var(--desk1) 0 2px, var(--desk2) 2px 4px);
+      overflow:hidden;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       color: var(--bw);
+
+      /* 复古像素背景：点阵 + 斜向条纹 + 暗角 */
+      background:
+        radial-gradient(1200px 800px at 50% 40%, rgba(255,255,255,.10), transparent 55%),
+        radial-gradient(900px 600px at 20% 70%, rgba(255,255,255,.06), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.20), transparent 20%, transparent 80%, rgba(0,0,0,.35)),
+        repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 6px, rgba(0,0,0,.04) 6px 12px),
+        radial-gradient(circle, rgba(0,0,0,.14) 1px, transparent 1px);
+      background-size: auto, auto, auto, auto, 6px 6px;
+    }
+
+    /* 居中舞台 */
+    .center{
+      position: fixed;
+      inset: 0;
+      display:grid;
+      place-items:center;
+      padding: 24px;
+    }
+
+    .stageWrap{
+      transform: scale(var(--fit));
+      transform-origin: center;
+      filter: drop-shadow(0 26px 0 rgba(0,0,0,.35)) drop-shadow(0 18px 38px rgba(0,0,0,.35));
+    }
+
+    .stage{
+      width: calc(var(--stageW) * 1px);
+      height: calc(var(--stageH) * 1px);
+      position: relative;
       overflow: hidden;
+
+      /* “显示器边框” */
+      border: 4px solid #000;
+      background: #fff;
+    }
+
+    /* 屏幕轻微像素化/扫描线感 */
+    .stage::after{
+      content:"";
+      position:absolute; inset:0;
+      pointer-events:none;
+      background:
+        repeating-linear-gradient(to bottom, rgba(0,0,0,.06) 0 1px, transparent 1px 3px),
+        radial-gradient(900px 600px at 50% 45%, rgba(0,0,0,.18), transparent 60%);
+      opacity:.35;
+      mix-blend-mode:multiply;
+    }
+
+    /* ====== UI Inside Stage (System 1-ish) ====== */
+
+    .ui{
+      position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(45deg, var(--desk1) 0 2px, var(--desk2) 2px 4px);
       user-select: none;
     }
 
-    /* 顶部菜单栏 */
     .menubar{
-      position: fixed;
-      left: 0; right: 0; top: 0;
+      position: absolute;
+      left:0; right:0; top:0;
       height: var(--barH);
       background: var(--paper);
       border-bottom: var(--winBorder) solid var(--bw);
-      display: flex;
-      align-items: center;
+      display:flex;
+      align-items:center;
       padding: 0 calc(8px * var(--scale));
       gap: calc(10px * var(--scale));
       z-index: 9999;
       font-size: calc(var(--ui) * var(--scale));
       line-height: 1;
     }
-    .menu-left, .menu-right{
-      display:flex; align-items:center; gap: calc(10px * var(--scale));
-    }
-    .menu-right{ margin-left: auto; gap: calc(12px * var(--scale)); }
+    .menu-left,.menu-right{ display:flex; align-items:center; gap: calc(10px * var(--scale)); }
+    .menu-right{ margin-left:auto; gap: calc(12px * var(--scale)); }
     .apple{
       width: calc(16px * var(--scale));
       height: calc(16px * var(--scale));
       border: var(--winBorder) solid var(--bw);
-      display: grid;
-      place-items: center;
-      font-weight: 700;
+      display:grid;
+      place-items:center;
+      font-weight:700;
       font-size: calc(12px * var(--scale));
-      cursor: pointer;
+      cursor:pointer;
+      background: transparent;
     }
     .menu-item{
       padding: calc(3px * var(--scale)) calc(6px * var(--scale));
-      cursor: pointer;
-      border: 1px solid transparent;
+      cursor:pointer;
+      border:1px solid transparent;
     }
-    .menu-item.active{
-      background: var(--bw);
-      color: var(--paper);
-    }
+    .menu-item.active{ background: var(--bw); color: var(--paper); }
 
-    /* 下拉菜单 */
     .dropdown{
-      position: fixed;
+      position: absolute;
       top: calc(var(--barH) - 1px);
-      min-width: calc(180px * var(--scale));
+      min-width: calc(200px * var(--scale));
       background: var(--paper);
       border: var(--winBorder) solid var(--bw);
       box-shadow: 0 calc(8px * var(--scale)) 0 var(--shadow);
-      display: none;
+      display:none;
       z-index: 9998;
       font-size: calc(var(--ui) * var(--scale));
     }
@@ -95,26 +144,23 @@
       cursor:pointer;
     }
     .dropdown .row:last-child{ border-bottom:0; }
-    .dropdown .row:hover{
-      background: var(--bw);
-      color: var(--paper);
-    }
+    .dropdown .row:hover{ background: var(--bw); color: var(--paper); }
     .kbd{ opacity:.75; margin-left: calc(12px * var(--scale)); }
+    .muted{ opacity:.7; }
 
-    /* 桌面区域（留出菜单栏高度） */
     .desktop{
-      position: fixed;
-      left: 0; right: 0;
+      position:absolute;
+      left:0; right:0;
       top: var(--barH);
-      bottom: 0;
+      bottom:0;
       padding: calc(14px * var(--scale));
     }
 
-    /* 图标 */
+    /* Icons */
     .icon{
-      position: absolute;
+      position:absolute;
       width: calc(76px * var(--scale));
-      text-align: center;
+      text-align:center;
       cursor: default;
     }
     .icon .glyph{
@@ -130,26 +176,24 @@
       display:inline-block;
       padding: calc(2px * var(--scale)) calc(4px * var(--scale));
       font-size: calc(var(--ui) * var(--scale));
-      line-height: 1.15;
+      line-height:1.15;
       background: transparent;
       color: var(--bw);
     }
-    .icon.selected .label{
-      background: var(--sel);
-      color: var(--selText);
-    }
+    .icon.selected .label{ background: var(--sel); color: var(--selText); }
 
-    /* 窗口 */
+    /* Windows */
     .window{
-      position: absolute;
+      position:absolute;
       background: var(--paper);
       border: var(--winBorder) solid var(--bw);
       box-shadow: 0 calc(10px * var(--scale)) 0 var(--shadow);
-      min-width: calc(260px * var(--scale));
-      min-height: calc(140px * var(--scale));
-      display: none;
+      min-width: calc(240px * var(--scale));
+      min-height: calc(130px * var(--scale));
+      display:none;
     }
     .window.visible{ display:block; }
+    .window.inactive{ opacity:.95; }
     .titlebar{
       height: calc(22px * var(--scale));
       border-bottom: var(--winBorder) solid var(--bw);
@@ -159,92 +203,96 @@
       padding: 0 calc(8px * var(--scale));
       cursor: move;
       background:
-        /* 经典标题栏虚线感 */
         repeating-linear-gradient(90deg, transparent 0 6px, rgba(0,0,0,.14) 6px 7px);
-    }
-    .window.inactive .titlebar{
-      opacity: .75;
-      filter: grayscale(1);
     }
     .closebox{
       width: calc(14px * var(--scale));
       height: calc(14px * var(--scale));
       border: var(--winBorder) solid var(--bw);
       background: var(--paper);
-      cursor: pointer;
-      flex: 0 0 auto;
+      cursor:pointer;
+      flex:0 0 auto;
       display:grid;
       place-items:center;
       font-size: calc(10px * var(--scale));
-      line-height: 1;
+      line-height:1;
     }
     .wintitle{
-      flex: 1 1 auto;
+      flex:1 1 auto;
       text-align:center;
       font-size: calc(var(--ui) * var(--scale));
-      letter-spacing: 0.02em;
-      font-weight: 700;
-      padding-right: calc(18px * var(--scale)); /* 平衡 closebox */
+      letter-spacing:.02em;
+      font-weight:700;
+      padding-right: calc(18px * var(--scale));
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
     }
     .content{
-      position: relative;
+      position:relative;
       padding: calc(10px * var(--scale));
       font-size: calc(var(--ui) * var(--scale));
-      line-height: 1.35;
+      line-height:1.35;
     }
 
-    /* 简单“经典”滚动条造型（装饰） */
+    /* Resize handle */
+    .resize-handle{
+      position:absolute;
+      right: 2px;
+      bottom: 2px;
+      width: calc(16px * var(--scale));
+      height: calc(16px * var(--scale));
+      border-left: var(--winBorder) solid var(--bw);
+      border-top: var(--winBorder) solid var(--bw);
+      background:
+        repeating-linear-gradient(135deg, transparent 0 3px, rgba(0,0,0,.20) 3px 4px);
+      cursor: nwse-resize;
+    }
+    .window.dialog .resize-handle{ display:none; }
+
+    /* Scrollframe (decorative System 1-ish) */
     .scrollframe{
       display:grid;
       grid-template-columns: 1fr calc(16px * var(--scale));
-      gap: 0;
       border: var(--winBorder) solid var(--bw);
       background: var(--paper);
       height: calc(220px * var(--scale));
     }
     .scrollframe .pane{
       padding: calc(10px * var(--scale));
-      overflow: auto;
-      user-select: text;
+      overflow:auto;
+      user-select:text;
     }
     .scrollframe .bar{
       border-left: var(--winBorder) solid var(--bw);
       background:
         repeating-linear-gradient(45deg, #fff 0 2px, #eee 2px 4px);
-      position: relative;
+      position:relative;
     }
     .scrollframe .thumb{
       position:absolute;
-      left: 2px; right: 2px;
+      left:2px; right:2px;
       top: calc(22px * var(--scale));
       height: calc(44px * var(--scale));
       border: var(--winBorder) solid var(--bw);
       background: var(--paper);
     }
 
-    /* Finder 列表 */
     .list{
       border: var(--winBorder) solid var(--bw);
       padding: calc(8px * var(--scale));
       background: var(--paper);
     }
     .list .item{
-      display:flex; justify-content: space-between; gap: calc(8px * var(--scale));
+      display:flex; justify-content: space-between;
       padding: calc(4px * var(--scale)) calc(6px * var(--scale));
       cursor: default;
     }
-    .list .item:hover{
-      background: var(--bw);
-      color: var(--paper);
-    }
-    .muted{ opacity: .7; }
+    .list .item:hover{ background: var(--bw); color: var(--paper); }
 
-    /* 对话框 */
+    /* Dialog */
     .dialog{
-      width: calc(360px * var(--scale));
-    }
-    .dialog .content{
-      padding: calc(12px * var(--scale));
+      width: calc(380px * var(--scale));
     }
     .btnrow{
       display:flex; justify-content:flex-end; gap: calc(8px * var(--scale));
@@ -254,246 +302,298 @@
       border: var(--winBorder) solid var(--bw);
       background: var(--paper);
       padding: calc(6px * var(--scale)) calc(10px * var(--scale));
-      cursor: pointer;
+      cursor:pointer;
       font-size: calc(var(--ui) * var(--scale));
     }
     .btn:active{ transform: translateY(1px); }
 
-    /* “桌面”点击取消选中/关闭菜单 */
-    .overlay-capture{
+    /* Tip outside stage */
+    .outerTip{
       position: fixed;
-      left:0; right:0; top:0; bottom:0;
-      z-index: 1;
-      pointer-events: none;
+      left: 18px;
+      bottom: 14px;
+      font-size: 12px;
+      opacity: .85;
+      color: rgba(255,255,255,.85);
+      text-shadow: 0 2px 0 rgba(0,0,0,.55);
+      pointer-events:none;
+    }
+    .outerTip code{
+      background: rgba(0,0,0,.45);
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,.20);
     }
 
-    /* 小提示 */
-    .hint{
-      position: fixed;
-      left: calc(14px * var(--scale));
-      bottom: calc(12px * var(--scale));
-      font-size: calc(11px * var(--scale));
-      opacity: .75;
-      z-index: 2;
-      background: rgba(255,255,255,.65);
-      border: 1px solid rgba(0,0,0,.25);
-      padding: calc(6px * var(--scale)) calc(8px * var(--scale));
-    }
-    .hint code{ background: #fff; border: 1px solid #000; padding: 1px 4px; }
-
-    /* 可选：大屏模式（由菜单切换） */
-    body.big { --scale: 1.6; }
-    body.huge { --scale: 2.0; }
+    /* Optional UI size switch */
+    body.big .stageWrap{ }
+    body.big .ui{ --scale: 1.25; }
+    body.huge .ui{ --scale: 1.55; }
   </style>
 </head>
+
 <body>
-  <!-- MENU BAR -->
-  <div class="menubar" id="menubar">
-    <div class="menu-left">
-      <div class="apple" id="appleBtn" title=""></div>
-      <div class="menu-item" data-menu="file">File</div>
-      <div class="menu-item" data-menu="edit">Edit</div>
-      <div class="menu-item" data-menu="view">View</div>
-      <div class="menu-item" data-menu="special">Special</div>
-    </div>
-    <div class="menu-right">
-      <div class="muted" id="clock">--:--</div>
-    </div>
-  </div>
+  <div class="center">
+    <div class="stageWrap" id="stageWrap">
+      <div class="stage" id="stage">
+        <div class="ui" id="ui">
 
-  <!-- DROPDOWNS -->
-  <div class="dropdown" id="dd-apple">
-    <div class="row" data-action="about">About the Macintosh…</div>
-    <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
-    <div class="row" data-action="openFinder">Open Finder</div>
-    <div class="row" data-action="openNote">Open Note Pad</div>
-  </div>
-
-  <div class="dropdown" id="dd-file">
-    <div class="row" data-action="openFinder">Open</div>
-    <div class="row" data-action="openNote">New Note</div>
-    <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
-    <div class="row" data-action="closeFront">Close <span class="kbd">⌘W</span></div>
-  </div>
-
-  <div class="dropdown" id="dd-edit">
-    <div class="row" data-action="beep">Undo <span class="kbd">⌘Z</span></div>
-    <div class="row" data-action="beep">Cut <span class="kbd">⌘X</span></div>
-    <div class="row" data-action="beep">Copy <span class="kbd">⌘C</span></div>
-    <div class="row" data-action="beep">Paste <span class="kbd">⌘V</span></div>
-  </div>
-
-  <div class="dropdown" id="dd-view">
-    <div class="row" data-action="scaleNormal">Normal Size</div>
-    <div class="row" data-action="scaleBig">Big Screen</div>
-    <div class="row" data-action="scaleHuge">Huge Screen</div>
-  </div>
-
-  <div class="dropdown" id="dd-special">
-    <div class="row" data-action="beep">Clean Up Desktop</div>
-    <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
-    <div class="row" data-action="restart">Restart…</div>
-    <div class="row" data-action="shutdown">Shut Down…</div>
-  </div>
-
-  <div class="overlay-capture" id="capture"></div>
-
-  <!-- DESKTOP -->
-  <div class="desktop" id="desktop">
-    <!-- Icons -->
-    <div class="icon" id="icon-hd" data-open="finder" style="left: 24px; top: 24px;">
-      <div class="glyph" aria-hidden="true">
-        <!-- Simple 1-bit disk SVG -->
-        <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
-          <rect x="6" y="6" width="24" height="24" fill="#fff" stroke="#000" stroke-width="2"/>
-          <rect x="10" y="10" width="16" height="8" fill="#fff" stroke="#000" stroke-width="2"/>
-          <rect x="10" y="22" width="16" height="6" fill="#fff" stroke="#000" stroke-width="2"/>
-          <rect x="13" y="24" width="3" height="2" fill="#000"/>
-          <rect x="20" y="24" width="3" height="2" fill="#000"/>
-        </svg>
-      </div>
-      <div class="label">Macintosh HD</div>
-    </div>
-
-    <div class="icon" id="icon-note" data-open="note" style="left: 24px; top: 122px;">
-      <div class="glyph" aria-hidden="true">
-        <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
-          <rect x="8" y="6" width="20" height="24" fill="#fff" stroke="#000" stroke-width="2"/>
-          <rect x="10" y="10" width="16" height="2" fill="#000"/>
-          <rect x="10" y="14" width="16" height="2" fill="#000"/>
-          <rect x="10" y="18" width="12" height="2" fill="#000"/>
-          <rect x="10" y="22" width="14" height="2" fill="#000"/>
-        </svg>
-      </div>
-      <div class="label">Note Pad</div>
-    </div>
-
-    <div class="icon" id="icon-trash" data-open="trash" style="right: 22px; top: 24px;">
-      <div class="glyph" aria-hidden="true">
-        <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
-          <rect x="12" y="10" width="12" height="20" fill="#fff" stroke="#000" stroke-width="2"/>
-          <rect x="10" y="10" width="16" height="4" fill="#fff" stroke="#000" stroke-width="2"/>
-          <rect x="14" y="14" width="2" height="14" fill="#000"/>
-          <rect x="20" y="14" width="2" height="14" fill="#000"/>
-        </svg>
-      </div>
-      <div class="label">Trash</div>
-    </div>
-  </div>
-
-  <!-- WINDOWS -->
-  <div class="window visible" id="win-finder" style="left: 140px; top: 80px; width: 520px;">
-    <div class="titlebar">
-      <div class="closebox" data-close="win-finder">×</div>
-      <div class="wintitle">Finder</div>
-    </div>
-    <div class="content">
-      <div class="scrollframe">
-        <div class="pane">
-          <div class="muted">Macintosh HD</div>
-          <div style="height:8px"></div>
-          <div class="list" id="finderList">
-            <div class="item" data-open="about"><span>System Folder</span><span class="muted">Folder</span></div>
-            <div class="item" data-open="note"><span>Note Pad</span><span class="muted">Application</span></div>
-            <div class="item" data-open="about"><span>Read Me</span><span class="muted">Text</span></div>
-            <div class="item" data-open="about"><span>Paint</span><span class="muted">Application</span></div>
-            <div class="item" data-open="about"><span>Calculator</span><span class="muted">Application</span></div>
+          <!-- MENU BAR -->
+          <div class="menubar" id="menubar">
+            <div class="menu-left">
+              <div class="apple" id="appleBtn" title=""></div>
+              <div class="menu-item" data-menu="file">File</div>
+              <div class="menu-item" data-menu="edit">Edit</div>
+              <div class="menu-item" data-menu="view">View</div>
+              <div class="menu-item" data-menu="special">Special</div>
+            </div>
+            <div class="menu-right">
+              <div class="muted" id="clock">--:--</div>
+            </div>
           </div>
-          <div style="height:14px"></div>
-          <div class="muted">
-            Tip: 双击桌面图标，或在菜单里打开窗口。
+
+          <!-- DROPDOWNS -->
+          <div class="dropdown" id="dd-apple">
+            <div class="row" data-action="about">About the Macintosh…</div>
+            <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
+            <div class="row" data-action="openFinder">Open Finder</div>
+            <div class="row" data-action="openNote">Open Note Pad</div>
           </div>
-        </div>
-        <div class="bar" aria-hidden="true">
-          <div class="thumb"></div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="window" id="win-note" style="left: 220px; top: 140px; width: 520px; height: 340px;">
-    <div class="titlebar">
-      <div class="closebox" data-close="win-note">×</div>
-      <div class="wintitle">Note Pad</div>
-    </div>
-    <div class="content" style="height: calc(100% - 22px * var(--scale));">
-      <div class="scrollframe" style="height: calc(100% - 4px);">
-        <div class="pane" style="padding:0; overflow:hidden;">
-          <textarea id="noteArea" style="
-            width:100%; height:100%;
-            border:0; outline:none;
-            padding: calc(10px * var(--scale));
-            resize:none;
-            font: inherit;
-            font-size: calc(var(--ui) * var(--scale));
-            line-height:1.45;
-            background: transparent;
-            color:#000;
-          ">Welcome to Macintosh.
+          <div class="dropdown" id="dd-file">
+            <div class="row" data-action="openFinder">Open</div>
+            <div class="row" data-action="openNote">New Note</div>
+            <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
+            <div class="row" data-action="noteSave">Save <span class="kbd">⌘S</span></div>
+            <div class="row" data-action="noteOpen">Open…</div>
+            <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
+            <div class="row" data-action="closeFront">Close <span class="kbd">⌘W</span></div>
+          </div>
 
-This is a mock of System 1-ish UI.
+          <div class="dropdown" id="dd-edit">
+            <div class="row" data-action="beep">Undo <span class="kbd">⌘Z</span></div>
+            <div class="row" data-action="beep">Cut <span class="kbd">⌘X</span></div>
+            <div class="row" data-action="beep">Copy <span class="kbd">⌘C</span></div>
+            <div class="row" data-action="beep">Paste <span class="kbd">⌘V</span></div>
+          </div>
+
+          <div class="dropdown" id="dd-view">
+            <div class="row" data-action="scaleNormal">Normal UI</div>
+            <div class="row" data-action="scaleBig">Big UI</div>
+            <div class="row" data-action="scaleHuge">Huge UI</div>
+          </div>
+
+          <div class="dropdown" id="dd-special">
+            <div class="row" data-action="beep">Clean Up Desktop</div>
+            <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
+            <div class="row" data-action="restart">Restart…</div>
+            <div class="row" data-action="shutdown">Shut Down…</div>
+          </div>
+
+          <!-- DESKTOP -->
+          <div class="desktop" id="desktop">
+            <div class="icon" id="icon-hd" data-open="finder" style="left: 24px; top: 24px;">
+              <div class="glyph" aria-hidden="true">
+                <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
+                  <rect x="6" y="6" width="24" height="24" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="10" y="10" width="16" height="8" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="10" y="22" width="16" height="6" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="13" y="24" width="3" height="2" fill="#000"/>
+                  <rect x="20" y="24" width="3" height="2" fill="#000"/>
+                </svg>
+              </div>
+              <div class="label">Macintosh HD</div>
+            </div>
+
+            <div class="icon" id="icon-note" data-open="note" style="left: 24px; top: 122px;">
+              <div class="glyph" aria-hidden="true">
+                <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
+                  <rect x="8" y="6" width="20" height="24" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="10" y="10" width="16" height="2" fill="#000"/>
+                  <rect x="10" y="14" width="16" height="2" fill="#000"/>
+                  <rect x="10" y="18" width="12" height="2" fill="#000"/>
+                  <rect x="10" y="22" width="14" height="2" fill="#000"/>
+                </svg>
+              </div>
+              <div class="label">Note Pad</div>
+            </div>
+
+            <div class="icon" id="icon-trash" data-open="trash" style="right: 22px; top: 24px;">
+              <div class="glyph" aria-hidden="true">
+                <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
+                  <rect x="12" y="10" width="12" height="20" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="10" y="10" width="16" height="4" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="14" y="14" width="2" height="14" fill="#000"/>
+                  <rect x="20" y="14" width="2" height="14" fill="#000"/>
+                </svg>
+              </div>
+              <div class="label">Trash</div>
+            </div>
+          </div>
+
+          <!-- WINDOWS -->
+          <div class="window visible" id="win-finder" style="left: 140px; top: 80px; width: 520px; height: 360px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-finder">×</div>
+              <div class="wintitle">Finder</div>
+            </div>
+            <div class="content" style="height: calc(100% - (22px * var(--scale)));">
+              <div class="scrollframe" style="height: calc(100% - 2px);">
+                <div class="pane">
+                  <div class="muted">Macintosh HD</div>
+                  <div style="height:8px"></div>
+                  <div class="list" id="finderList">
+                    <div class="item" data-open="about"><span>System Folder</span><span class="muted">Folder</span></div>
+                    <div class="item" data-open="note"><span>Note Pad</span><span class="muted">Application</span></div>
+                    <div class="item" data-open="about"><span>Read Me</span><span class="muted">Text</span></div>
+                    <div class="item" data-open="about"><span>Paint</span><span class="muted">Application</span></div>
+                    <div class="item" data-open="about"><span>Calculator</span><span class="muted">Application</span></div>
+                  </div>
+                  <div style="height:14px"></div>
+                  <div class="muted">Tip: 双击图标打开 · 右下角可拖拽缩放窗口</div>
+                </div>
+                <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
+              </div>
+            </div>
+            <div class="resize-handle" data-resize="win-finder" title="Resize"></div>
+          </div>
+
+          <div class="window" id="win-note" style="left: 220px; top: 140px; width: 520px; height: 360px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-note">×</div>
+              <div class="wintitle" id="noteTitle">Note Pad</div>
+            </div>
+            <div class="content" style="height: calc(100% - (22px * var(--scale)));">
+              <div class="scrollframe" style="height: calc(100% - 2px);">
+                <div class="pane" style="padding:0; overflow:hidden;">
+                  <textarea id="noteArea" style="
+                    width:100%; height:100%;
+                    border:0; outline:none;
+                    padding: calc(10px * var(--scale));
+                    resize:none;
+                    font: inherit;
+                    font-size: calc(var(--ui) * var(--scale));
+                    line-height:1.45;
+                    background: transparent;
+                    color:#000;
+                  ">Welcome to Macintosh.
+
+This is a System 1-ish UI mock.
+
 Try:
 - Drag windows by the title bar
-- Click menus
-- Double-click icons
-- Press ⌘W to close front window
+- Resize windows by bottom-right corner
+- Use File → Save / Open…
 
 (You can type here.)</textarea>
+                </div>
+                <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
+              </div>
+            </div>
+            <div class="resize-handle" data-resize="win-note" title="Resize"></div>
+          </div>
+
+          <div class="window dialog" id="win-about" style="left: 270px; top: 120px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-about">×</div>
+              <div class="wintitle">About the Macintosh</div>
+            </div>
+            <div class="content">
+              <div style="display:flex; gap:12px; align-items:flex-start;">
+                <div style="width:64px; height:64px; border:var(--winBorder) solid #000; background:#fff; display:grid; place-items:center;">
+                  <div style="font-weight:700; font-size: 26px;"></div>
+                </div>
+                <div>
+                  <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
+                  <div class="muted">System 1 UI mock (HTML/CSS/JS)</div>
+                  <div style="height:8px"></div>
+                  <div>Disk: localStorage (pretend)</div>
+                  <div>Windows: drag + resize</div>
+                </div>
+              </div>
+              <div class="btnrow">
+                <button class="btn" data-action="closeAbout">OK</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="window dialog" id="win-trash" style="left: 360px; top: 160px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-trash">×</div>
+              <div class="wintitle">Trash</div>
+            </div>
+            <div class="content">
+              <div class="muted">Trash is empty.</div>
+              <div class="btnrow">
+                <button class="btn" data-close="win-trash">Close</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="window dialog" id="win-open" style="left: 260px; top: 160px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-open">×</div>
+              <div class="wintitle">Open</div>
+            </div>
+            <div class="content">
+              <div class="muted">Select a document:</div>
+              <div style="height:8px"></div>
+              <div class="list" id="openList"></div>
+              <div class="btnrow">
+                <button class="btn" data-action="doOpen">Open</button>
+                <button class="btn" data-close="win-open">Cancel</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="window dialog" id="win-alert" style="left: 280px; top: 200px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-alert">×</div>
+              <div class="wintitle" id="alertTitle">Alert</div>
+            </div>
+            <div class="content">
+              <div id="alertMsg">Message</div>
+              <div class="btnrow">
+                <button class="btn" data-close="win-alert">OK</button>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
       </div>
     </div>
   </div>
 
-  <div class="window dialog" id="win-about" style="left: 260px; top: 120px;">
-    <div class="titlebar">
-      <div class="closebox" data-close="win-about">×</div>
-      <div class="wintitle">About the Macintosh</div>
-    </div>
-    <div class="content">
-      <div style="display:flex; gap:12px; align-items:flex-start;">
-        <div style="width:64px; height:64px; border:var(--winBorder) solid #000; background:#fff; display:grid; place-items:center;">
-          <div style="font-weight:700; font-size: calc(26px * var(--scale));"></div>
-        </div>
-        <div>
-          <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
-          <div class="muted">System 1 UI mock (HTML/CSS/JS)</div>
-          <div style="height:8px"></div>
-          <div>Memory: 128K (pretend)</div>
-          <div>Display: 512×342 (pretend)</div>
-        </div>
-      </div>
-      <div class="btnrow">
-        <button class="btn" data-action="closeAbout">OK</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="window dialog" id="win-trash" style="left: 360px; top: 160px;">
-    <div class="titlebar">
-      <div class="closebox" data-close="win-trash">×</div>
-      <div class="wintitle">Trash</div>
-    </div>
-    <div class="content">
-      <div class="muted">Trash is empty.</div>
-      <div class="btnrow">
-        <button class="btn" data-close="win-trash">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="hint">
-    双击图标打开 · 拖拽窗口 · 菜单栏可用 · 快捷键 <code>⌘W</code> 关闭前台窗口
+  <div class="outerTip">
+    拖拽窗口 · 右下角缩放 · 快捷键 <code>Ctrl+W</code> 关闭前台 · <code>Ctrl+S</code> 保存 Note
   </div>
 
   <script>
+    // ===== Fit stage to viewport while keeping fixed logical size =====
+    (function fitStage(){
+      const stageW = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stageW')) || 900;
+      const stageH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--stageH')) || 640;
+
+      function apply(){
+        const pad = 48;
+        const vw = window.innerWidth - pad;
+        const vh = window.innerHeight - pad;
+        const s = Math.min(vw / stageW, vh / stageH, 1);
+        document.documentElement.style.setProperty('--fit', s.toFixed(4));
+      }
+      window.addEventListener('resize', apply);
+      apply();
+    })();
+
     // ---------------------------
-    // Minimal System-1-ish Window Manager
+    // Minimal System-1-ish Window Manager (inside stage)
     // ---------------------------
     const $ = (sel, root=document) => root.querySelector(sel);
     const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+
+    const ui = $("#ui");
+    const stage = $("#stage");
     const desktop = $("#desktop");
-    const menubar = $("#menubar");
 
     let zTop = 50;
     let frontWin = null;
@@ -506,7 +606,7 @@ Try:
       $("#clock").textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }, 500);
 
-    // Beep (tiny)
+    // Beep
     function beep(){
       try{
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -517,12 +617,12 @@ Try:
         o.connect(g); g.connect(ctx.destination);
         o.start();
         setTimeout(() => { o.stop(); ctx.close(); }, 90);
-      }catch(e){ /* ignore */ }
+      }catch(e){}
     }
 
     function setFront(win){
       if(!win) return;
-      $$(".window").forEach(w => w.classList.add("inactive"));
+      $$(".window", ui).forEach(w => w.classList.add("inactive"));
       win.classList.remove("inactive");
       zTop += 1;
       win.style.zIndex = zTop;
@@ -535,58 +635,66 @@ Try:
       win.classList.add("visible");
       setFront(win);
     }
-
     function hideWin(id){
       const win = document.getElementById(id);
       if(!win) return;
       win.classList.remove("visible");
       if(frontWin === win) frontWin = null;
-      // bring any other visible window to front
-      const vis = $$(".window.visible");
+      const vis = $$(".window.visible", ui);
       if(vis.length) setFront(vis[vis.length-1]);
     }
 
-    // Window dragging
+    // Dragging windows (within stage coords)
     let drag = null;
+    function stageRect(){ return stage.getBoundingClientRect(); }
+    function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
     function onPointerDownTitle(e){
       const title = e.currentTarget;
       const win = title.closest(".window");
-      // Don't start drag if clicked closebox
       if(e.target.closest(".closebox")) return;
       setFront(win);
 
+      const sr = stageRect();
       const rect = win.getBoundingClientRect();
+
       drag = {
         win,
         startX: e.clientX,
         startY: e.clientY,
-        origL: rect.left,
-        origT: rect.top
+        origL: rect.left - sr.left,
+        origT: rect.top  - sr.top
       };
       win.setPointerCapture?.(e.pointerId);
     }
+
     function onPointerMove(e){
       if(!drag) return;
       const dx = e.clientX - drag.startX;
       const dy = e.clientY - drag.startY;
-      // Keep within viewport (roughly)
-      const left = Math.max(6, drag.origL + dx);
-      const top  = Math.max(parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--barH')) + 6, drag.origT + dy);
-      drag.win.style.left = left + "px";
-      drag.win.style.top  = top + "px";
-    }
-    function onPointerUp(){
-      drag = null;
-    }
 
-    $$(".window .titlebar").forEach(tb => {
-      tb.addEventListener("pointerdown", onPointerDownTitle);
-    });
+      const w = drag.win;
+      const sr = stageRect();
+      const bw = w.offsetWidth;
+      const bh = w.offsetHeight;
+
+      const maxL = sr.width - bw - 4;
+      const maxT = sr.height - bh - 4;
+
+      const left = clamp(drag.origL + dx, 4, maxL);
+      const top  = clamp(drag.origT + dy, parseFloat(getComputedStyle(ui).getPropertyValue('--barH')) + 4, maxT);
+
+      w.style.left = left + "px";
+      w.style.top  = top + "px";
+    }
+    function onPointerUp(){ drag = null; }
+
+    $$(".window .titlebar", ui).forEach(tb => tb.addEventListener("pointerdown", onPointerDownTitle));
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
 
     // Close buttons
-    $$(".closebox").forEach(btn => {
+    $$(".closebox", ui).forEach(btn => {
       btn.addEventListener("click", (e) => {
         const id = btn.getAttribute("data-close");
         if(id) hideWin(id);
@@ -594,26 +702,70 @@ Try:
       });
     });
 
-    // Click window to front
-    $$(".window").forEach(win => {
-      win.addEventListener("pointerdown", () => setFront(win));
-    });
+    // Bring window to front on click
+    $$(".window", ui).forEach(win => win.addEventListener("pointerdown", () => setFront(win)));
+
+    // Resizing
+    let resize = null;
+    function onPointerDownResize(e){
+      const id = e.currentTarget.getAttribute("data-resize");
+      const win = document.getElementById(id);
+      if(!win) return;
+      setFront(win);
+
+      const sr = stageRect();
+      const rect = win.getBoundingClientRect();
+
+      resize = {
+        win,
+        startX: e.clientX,
+        startY: e.clientY,
+        origW: rect.width,
+        origH: rect.height,
+        left: rect.left - sr.left,
+        top: rect.top - sr.top
+      };
+      win.setPointerCapture?.(e.pointerId);
+      e.stopPropagation();
+    }
+
+    function onPointerMoveResize(e){
+      if(!resize) return;
+      const dx = e.clientX - resize.startX;
+      const dy = e.clientY - resize.startY;
+
+      const sr = stageRect();
+      const w = resize.win;
+
+      const minW = parseFloat(getComputedStyle(w).minWidth) || 240;
+      const minH = parseFloat(getComputedStyle(w).minHeight) || 130;
+
+      const maxW = sr.width - resize.left - 4;
+      const maxH = sr.height - resize.top - 4;
+
+      const nw = clamp(resize.origW + dx, minW, maxW);
+      const nh = clamp(resize.origH + dy, minH, maxH);
+
+      w.style.width = nw + "px";
+      w.style.height = nh + "px";
+    }
+    function onPointerUpResize(){ resize = null; }
+
+    $$(".resize-handle", ui).forEach(h => h.addEventListener("pointerdown", onPointerDownResize));
+    window.addEventListener("pointermove", onPointerMoveResize);
+    window.addEventListener("pointerup", onPointerUpResize);
 
     // Desktop icon selection
-    function clearIconSelection(){
-      $$(".icon").forEach(i => i.classList.remove("selected"));
-    }
+    function clearIconSelection(){ $$(".icon", ui).forEach(i => i.classList.remove("selected")); }
     desktop.addEventListener("pointerdown", (e) => {
-      // click on empty desktop => deselect + close menus
       if(!e.target.closest(".icon") && !e.target.closest(".window")){
         clearIconSelection();
         closeMenus();
       }
     });
 
-    // Icon click/double-click
-    let lastClick = { id:null, t:0 };
-    $$(".icon").forEach(icon => {
+    // Icon interactions
+    $$(".icon", ui).forEach(icon => {
       icon.addEventListener("click", () => {
         clearIconSelection();
         icon.classList.add("selected");
@@ -652,35 +804,40 @@ Try:
     };
 
     function closeMenus(){
-      $$(".menu-item").forEach(m => m.classList.remove("active"));
+      $$(".menu-item", ui).forEach(m => m.classList.remove("active"));
       Object.values(menus).forEach(dd => dd.style.display = "none");
       activeMenu = null;
+      $("#appleBtn").style.background = "";
+      $("#appleBtn").style.color = "";
     }
 
     function openMenu(name, anchorEl){
       closeMenus();
       activeMenu = name;
-      // highlight
+
       if(anchorEl.classList.contains("menu-item")) anchorEl.classList.add("active");
-      if(name === "apple") $("#appleBtn").style.background = "#000", $("#appleBtn").style.color="#fff";
-      else { $("#appleBtn").style.background = "", $("#appleBtn").style.color=""; }
+      if(name === "apple"){
+        $("#appleBtn").style.background = "#000";
+        $("#appleBtn").style.color = "#fff";
+      }
 
       const dd = menus[name];
       if(!dd) return;
 
-      // Position under anchor
+      // Position relative to stage
+      const sr = stageRect();
       const r = anchorEl.getBoundingClientRect();
-      dd.style.left = Math.max(6, r.left) + "px";
+      dd.style.left = Math.max(6, r.left - sr.left) + "px";
       dd.style.display = "block";
     }
 
     $("#appleBtn").addEventListener("click", (e) => {
-      if(activeMenu === "apple"){ closeMenus(); $("#appleBtn").style.background=""; $("#appleBtn").style.color=""; return; }
+      if(activeMenu === "apple"){ closeMenus(); return; }
       openMenu("apple", e.currentTarget);
       e.stopPropagation();
     });
 
-    $$(".menu-item").forEach(mi => {
+    $$(".menu-item", ui).forEach(mi => {
       mi.addEventListener("click", (e) => {
         const name = mi.getAttribute("data-menu");
         if(activeMenu === name){ closeMenus(); return; }
@@ -689,22 +846,141 @@ Try:
       });
     });
 
-    // click outside to close dropdowns
-    window.addEventListener("pointerdown", (e) => {
+    // click outside stage UI menus
+    ui.addEventListener("pointerdown", (e) => {
       if(e.target.closest(".dropdown") || e.target.closest(".menubar")) return;
       closeMenus();
-      $("#appleBtn").style.background=""; $("#appleBtn").style.color="";
     });
 
+    // Dialog helpers
+    function alertBox(title, msg){
+      $("#alertTitle").textContent = title;
+      $("#alertMsg").textContent = msg;
+      showWin("win-alert");
+    }
+
+    // Note "disk" (localStorage)
+    const NOTE_KEY = "mac1_note_text";
+    const NOTE_TIME = "mac1_note_time";
+    function hasSavedNote(){ return localStorage.getItem(NOTE_KEY) != null; }
+    function saveNote(){
+      const txt = $("#noteArea")?.value ?? "";
+      localStorage.setItem(NOTE_KEY, txt);
+      localStorage.setItem(NOTE_TIME, new Date().toISOString());
+      $("#noteTitle").textContent = "Note Pad — Saved";
+      alertBox("Save", "Document saved to disk.");
+    }
+    function openNoteDialog(){
+      const list = $("#openList");
+      list.innerHTML = "";
+      const saved = hasSavedNote();
+      const time = localStorage.getItem(NOTE_TIME);
+      const items = [
+        { id:"factory", name:"Welcome Note", meta:"Text" },
+        ...(saved ? [{ id:"saved", name:"Saved Note", meta: time ? ("Saved " + new Date(time).toLocaleString()) : "Saved" }] : [])
+      ];
+      items.forEach((it, idx) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.dataset.openId = it.id;
+        div.innerHTML = `<span>${it.name}</span><span class="muted">${it.meta}</span>`;
+        div.addEventListener("click", () => {
+          $$("#openList .item").forEach(x => x.style.background = "");
+          $$("#openList .item").forEach(x => x.style.color = "");
+          div.style.background = "#000";
+          div.style.color = "#fff";
+          list.dataset.selected = it.id;
+        });
+        if(idx === 0){
+          list.dataset.selected = it.id;
+          div.style.background = "#000"; div.style.color = "#fff";
+        }
+        list.appendChild(div);
+      });
+      showWin("win-open");
+      setFront($("#win-open"));
+    }
+    function doOpen(){
+      const sel = $("#openList").dataset.selected || "factory";
+      showWin("win-note");
+      if(sel === "factory"){
+        $("#noteArea").value =
+`Welcome to Macintosh.
+
+This is a System 1-ish UI mock.
+
+Use File → Save to store this note.
+Use File → Open… to load it back.
+
+(You can type here.)`;
+        $("#noteTitle").textContent = "Note Pad";
+      }else if(sel === "saved"){
+        const txt = localStorage.getItem(NOTE_KEY);
+        if(txt == null){
+          alertBox("Open", "No saved document found.");
+        }else{
+          $("#noteArea").value = txt;
+          $("#noteTitle").textContent = "Note Pad — Saved";
+        }
+      }
+      hideWin("win-open");
+      $("#noteArea")?.focus();
+    }
+
     // Dropdown actions
+    function restoreAbout(){
+      $("#win-about .wintitle").textContent = "About the Macintosh";
+      $("#win-about .content").innerHTML = `
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+          <div style="width:64px; height:64px; border:var(--winBorder) solid #000; background:#fff; display:grid; place-items:center;">
+            <div style="font-weight:700; font-size: 26px;"></div>
+          </div>
+          <div>
+            <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
+            <div class="muted">System 1 UI mock (HTML/CSS/JS)</div>
+            <div style="height:8px"></div>
+            <div>Disk: localStorage (pretend)</div>
+            <div>Windows: drag + resize</div>
+          </div>
+        </div>
+        <div class="btnrow">
+          <button class="btn" data-action="closeAbout">OK</button>
+        </div>`;
+      bindDialogButtons();
+    }
+
+    function bindDialogButtons(){
+      $$("#win-about [data-action]").forEach(btn=>{
+        btn.onclick = (e) => {
+          const act = btn.getAttribute("data-action");
+          applyAction(act);
+          e.stopPropagation();
+        };
+      });
+    }
+    bindDialogButtons();
+
     function applyAction(act){
       switch(act){
-        case "about": openThing("about"); break;
-        case "openFinder": openThing("finder"); break;
-        case "openNote": openThing("note"); break;
+        case "about": showWin("win-about"); break;
+        case "openFinder": showWin("win-finder"); break;
+        case "openNote":
+          showWin("win-note");
+          $("#noteTitle").textContent = "Note Pad";
+          setTimeout(()=>$("#noteArea")?.focus(), 50);
+          break;
+        case "noteSave":
+          showWin("win-note");
+          saveNote();
+          break;
+        case "noteOpen":
+          openNoteDialog();
+          break;
+        case "doOpen":
+          doOpen();
+          break;
         case "closeFront":
-          if(frontWin) hideWin(frontWin.id);
-          else beep();
+          if(frontWin) hideWin(frontWin.id); else beep();
           break;
         case "scaleNormal":
           document.body.classList.remove("big","huge");
@@ -729,28 +1005,16 @@ Try:
             </div>`;
           bindDialogButtons();
           break;
+        case "doRestart":
+          closeMenus();
+          $$(".window", ui).forEach(w => w.classList.remove("visible"));
+          setTimeout(() => { showWin("win-finder"); }, 250);
+          break;
         case "shutdown":
           beep();
-          showWin("win-about");
-          $("#win-about .wintitle").textContent = "Shut Down";
-          $("#win-about .content").innerHTML = `
-            <div>It is now safe to turn off your computer.</div>
-            <div class="btnrow">
-              <button class="btn" data-action="closeAbout">OK</button>
-            </div>`;
-          bindDialogButtons();
-          break;
-        case "doRestart":
-          // fake “restart” effect
-          closeMenus();
-          $$(".window").forEach(w => w.classList.remove("visible"));
-          setTimeout(() => {
-            showWin("win-finder");
-            $("#win-about").classList.remove("visible");
-          }, 350);
+          alertBox("Shut Down", "It is now safe to close this tab.");
           break;
         case "closeAbout":
-          // restore about content to default if it was overwritten
           restoreAbout();
           hideWin("win-about");
           break;
@@ -760,40 +1024,7 @@ Try:
       }
     }
 
-    function restoreAbout(){
-      $("#win-about .wintitle").textContent = "About the Macintosh";
-      $("#win-about .content").innerHTML = `
-        <div style="display:flex; gap:12px; align-items:flex-start;">
-          <div style="width:64px; height:64px; border:var(--winBorder) solid #000; background:#fff; display:grid; place-items:center;">
-            <div style="font-weight:700; font-size: calc(26px * var(--scale));"></div>
-          </div>
-          <div>
-            <div style="font-weight:700; margin-bottom:6px;">Macintosh</div>
-            <div class="muted">System 1 UI mock (HTML/CSS/JS)</div>
-            <div style="height:8px"></div>
-            <div>Memory: 128K (pretend)</div>
-            <div>Display: 512×342 (pretend)</div>
-          </div>
-        </div>
-        <div class="btnrow">
-          <button class="btn" data-action="closeAbout">OK</button>
-        </div>
-      `;
-      bindDialogButtons();
-    }
-
-    function bindDialogButtons(){
-      $$("#win-about [data-action]").forEach(btn=>{
-        btn.addEventListener("click", (e)=>{
-          const act = btn.getAttribute("data-action");
-          applyAction(act);
-          e.stopPropagation();
-        });
-      });
-    }
-    bindDialogButtons();
-
-    $$(".dropdown").forEach(dd => {
+    $$(".dropdown", ui).forEach(dd => {
       dd.addEventListener("click", (e) => {
         const row = e.target.closest(".row");
         if(!row) return;
@@ -801,19 +1032,30 @@ Try:
         if(act && act !== "sep"){
           applyAction(act);
           closeMenus();
-          $("#appleBtn").style.background=""; $("#appleBtn").style.color="";
         }
       });
     });
 
-    // keyboard shortcut: Cmd+W close front
+    // open dialog buttons
+    $$("#win-open [data-action]").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const act = btn.getAttribute("data-action");
+        applyAction(act);
+        e.stopPropagation();
+      });
+    });
+
+    // keyboard shortcuts: Windows用Ctrl模拟⌘
     window.addEventListener("keydown", (e) => {
-      const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-      const cmd = isMac ? e.metaKey : e.ctrlKey; // Windows 上用 Ctrl 模拟
+      const cmd = e.ctrlKey || e.metaKey;
       if(cmd && (e.key === "w" || e.key === "W")){
         e.preventDefault();
-        if(frontWin) hideWin(frontWin.id);
-        else beep();
+        if(frontWin) hideWin(frontWin.id); else beep();
+      }
+      if(cmd && (e.key === "s" || e.key === "S")){
+        e.preventDefault();
+        showWin("win-note");
+        saveNote();
       }
       if(e.key === "Escape"){
         closeMenus();
@@ -821,7 +1063,7 @@ Try:
       }
     });
 
-    // Init: show Finder, set front
+    // default: show Finder
     showWin("win-finder");
     setFront($("#win-finder"));
   </script>
