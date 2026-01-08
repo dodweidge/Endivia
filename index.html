@@ -1412,6 +1412,137 @@ ui.addEventListener("pointerup", handleDataClose, true);
   let dragWin = null, resizeWin = null, dragIcon = null;
   const DRAG_START_PX = 6;
 
+  // ===== Global 2-finger viewport gesture (works even inside windows/canvas) =====
+  // Fix: mobile pinch-zoom + two-finger pan should work no matter where fingers start.
+  const vp2 = { pointers:new Map(), active:false, prevMidX:0, prevMidY:0, prevDist:0, prevEff:1 };
+  let suppressClickUntil = 0;
+
+  function vp2Dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+  function vp2Mid(a,b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+
+  function vp2StartIfReady(){
+    if(vp2.active) return;
+    if(vp2.pointers.size < 2) return;
+    const [a,b] = [...vp2.pointers.values()].slice(0,2);
+    const m = vp2Mid(a,b);
+    vp2.active = true;
+    vp2.prevMidX = m.x;
+    vp2.prevMidY = m.y;
+    vp2.prevDist = Math.max(1, vp2Dist(a,b));
+    vp2.prevEff = effFit();
+
+    // cancel any existing background-gesture state (so it won't get stuck if we stop propagation)
+    pointers.clear();
+    gesture = null;
+
+    // cancel any single-finger drags that may have started before the 2nd finger landed
+    dragWin = null; resizeWin = null; dragIcon = null;
+
+    // prevent accidental taps/clicks fired at the end of a pinch
+    suppressClickUntil = performance.now() + 480;
+  }
+
+  function vp2Update(){
+    if(!vp2.active) return;
+    if(vp2.pointers.size < 2) return;
+
+    const [a,b] = [...vp2.pointers.values()].slice(0,2);
+    const m = vp2Mid(a,b);
+    const d = Math.max(1, vp2Dist(a,b));
+
+    // midpoint pan
+    view.panX += (m.x - vp2.prevMidX);
+    view.panY += (m.y - vp2.prevMidY);
+
+    // zoom ratio
+    const ratio = d / vp2.prevDist;
+    view.userZoom = Math.max(view.minZoom, Math.min(view.maxZoom, view.userZoom * ratio));
+
+    // scale-around-midpoint (keep content under fingers)
+    const oldEff = vp2.prevEff;
+    const newEff = effFit();
+    const r = newEff / Math.max(0.0001, oldEff);
+
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    view.panX = r * view.panX + (1 - r) * (m.x - cx);
+    view.panY = r * view.panY + (1 - r) * (m.y - cy);
+
+    applyView();
+
+    vp2.prevMidX = m.x;
+    vp2.prevMidY = m.y;
+    vp2.prevDist = d;
+    vp2.prevEff = newEff;
+  }
+
+  function vp2End(id){
+    vp2.pointers.delete(id);
+    if(vp2.active && vp2.pointers.size < 2){
+      vp2.active = false;
+      // also reset background gesture state
+      pointers.clear();
+      gesture = null;
+      suppressClickUntil = performance.now() + 360;
+    }
+  }
+
+  // Capture-phase handlers so 2-finger gestures still work even if UI stops propagation
+  window.addEventListener("pointerdown", (e) => {
+    if(e.pointerType !== "touch") return;
+    vp2.pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    vp2StartIfReady();
+
+    if(vp2.active){
+      // optional: keep receiving moves even if a window/icon captured pointers
+      try{ center.setPointerCapture?.(e.pointerId); }catch(_){}
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, { capture:true, passive:false });
+
+  window.addEventListener("pointermove", (e) => {
+    if(e.pointerType !== "touch") return;
+    const p = vp2.pointers.get(e.pointerId);
+    if(!p) return;
+    p.x = e.clientX; p.y = e.clientY;
+
+    if(vp2.active){
+      vp2Update();
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, { capture:true, passive:false });
+
+  window.addEventListener("pointerup", (e) => {
+    if(e.pointerType !== "touch") return;
+    vp2End(e.pointerId);
+
+    if(vp2.active || performance.now() < suppressClickUntil){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, { capture:true, passive:false });
+
+  window.addEventListener("pointercancel", (e) => {
+    if(e.pointerType !== "touch") return;
+    vp2End(e.pointerId);
+
+    if(vp2.active || performance.now() < suppressClickUntil){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, { capture:true, passive:false });
+
+  // Block stray clicks caused by pinch end
+  ui.addEventListener("click", (e) => {
+    if(performance.now() < suppressClickUntil){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+
+
   function onPointerDownTitle(e){
     const win = e.currentTarget.closest(".window");
     if(e.target.closest(".closebox")) return;
