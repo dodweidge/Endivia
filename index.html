@@ -1278,6 +1278,19 @@
   center.addEventListener("pointerup", (e) => endPointer(e.pointerId), { passive:true });
   center.addEventListener("pointercancel", (e) => endPointer(e.pointerId), { passive:true });
 
+  function resetViewportGesture(){
+    pointers.clear();
+    gesture = null;
+  }
+
+  // Safety: if a pointer ends outside the center (or DOM changes while pressed),
+  // ensure we don't keep stale pointers that block panning.
+  window.addEventListener("pointerup", (e)=>{ if(pointers.has(e.pointerId)) endPointer(e.pointerId); }, true);
+  window.addEventListener("pointercancel", (e)=>{ if(pointers.has(e.pointerId)) endPointer(e.pointerId); }, true);
+  window.addEventListener("blur", ()=> resetViewportGesture(), true);
+  document.addEventListener("visibilitychange", ()=>{ if(document.hidden) resetViewportGesture(); }, true);
+
+
   // ===== Original desktop/window interactions (PC + mobile one-finger) =====
   let zTop = 50;
   let frontWin = null;
@@ -1320,6 +1333,7 @@
     frontWin = win;
   }
   function showWin(id){
+    resetViewportGesture();
     const win = document.getElementById(id);
     if(!win) return;
     win.classList.add("visible");
@@ -1339,6 +1353,7 @@
     const win = document.getElementById(id);
     if(!win) return;
     win.classList.remove("visible");
+    resetViewportGesture();
     if(frontWin === win) frontWin = null;
     const vis = $$(".window.visible", ui);
     if(vis.length) setFront(vis[vis.length-1]);
