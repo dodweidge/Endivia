@@ -490,6 +490,7 @@
             <div class="row" data-action="openNote">Open Note Pad</div>
             <div class="row" data-action="openCalc">Open Calculator</div>
             <div class="row" data-action="openMusic">Open Music Player</div>
+            <div class="row" data-action="openOrbitMap">Open Orbit Map</div>
           </div>
 
           <div class="dropdown" id="dd-file">
@@ -497,6 +498,7 @@
             <div class="row" data-action="openNote">New Note</div>
             <div class="row" data-action="openCalc">Open Calculator</div>
             <div class="row" data-action="openMusic">Open Music Player</div>
+            <div class="row" data-action="openOrbitMap">Open Orbit Map</div>
             <div class="row" data-action="sep" style="pointer-events:none; opacity:.6;">────────────</div>
             <div class="row" data-action="closeFront">Close <span class="kbd">⌘W</span></div>
           </div>
@@ -578,6 +580,42 @@
               <div class="label">Music</div>
             </div>
 
+
+            <div class="icon" id="icon-endivia" data-open="endivia" style="left:24px; top:416px;">
+              <div class="glyph" aria-hidden="true">
+                <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges" aria-hidden="true">
+  <!-- ring -->
+  <circle cx="18" cy="18" r="11" fill="#fff" stroke="#000" stroke-width="2"/>
+  <circle cx="18" cy="18" r="6" fill="#fff" stroke="#000" stroke-width="2"/>
+  <!-- central spine -->
+  <rect x="16" y="7" width="4" height="22" fill="#fff" stroke="#000" stroke-width="2"/>
+  <!-- side modules -->
+  <rect x="6"  y="15" width="6" height="6" fill="#fff" stroke="#000" stroke-width="2"/>
+  <rect x="24" y="15" width="6" height="6" fill="#fff" stroke="#000" stroke-width="2"/>
+  <!-- tiny ports -->
+  <rect x="17" y="10" width="2" height="2" fill="#000"/>
+  <rect x="17" y="24" width="2" height="2" fill="#000"/>
+</svg>
+              </div>
+              <div class="label">Endivia</div>
+            </div>
+
+            <div class="icon" id="icon-orbitmap" data-open="orbitmap" style="left:24px; top:514px;">
+              <div class="glyph" aria-hidden="true">
+                <!-- pixel-ish Earth + terminator + station -->
+                <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
+                  <rect x="7" y="7" width="22" height="22" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <circle cx="18" cy="18" r="8" fill="#fff" stroke="#000" stroke-width="2"/>
+                  <rect x="18" y="10" width="1" height="16" fill="#000"/>
+                  <circle cx="24" cy="14" r="1.5" fill="#000"/>
+                  <rect x="24" y="13" width="6" height="2" fill="#000"/>
+                  <rect x="30" y="12" width="1" height="4" fill="#000"/>
+                </svg>
+              </div>
+              <div class="label">Orbit Map</div>
+            </div>
+
+
             <div class="icon" id="icon-trash" data-open="trash" style="left:792px; top:24px;">
               <div class="glyph" aria-hidden="true">
                 <svg width="100%" height="100%" viewBox="0 0 36 36" shape-rendering="crispEdges">
@@ -605,6 +643,8 @@
                     <div class="item" data-open="note"><span>Note Pad</span><span class="muted">Application</span></div>
                     <div class="item" data-open="calc"><span>Calculator</span><span class="muted">Application</span></div>
                     <div class="item" data-open="music"><span>Music Player</span><span class="muted">Application</span></div>
+                    <div class="item" data-open="endivia"><span>Endivia Hotel</span><span class="muted">Website</span></div>
+                    <div class="item" data-open="orbitmap"><span>Orbit Map</span><span class="muted">Application</span></div>
                     <div class="item" data-open="about"><span>Read Me</span><span class="muted">Text</span></div>
                   </div>
                   <div style="height:12px"></div>
@@ -721,7 +761,277 @@
             <div class="resize-handle" data-resize="win-music" title="Resize"></div>
           </div>
 
-          <div class="window dialog" id="win-about" style="left:260px; top:120px;">
+
+          <div class="window" id="win-endivia" style="left:170px; top:110px; width:620px; height:420px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-endivia">×</div>
+              <div class="wintitle">Endivia · Orbital Hotel</div>
+            </div>
+            <div class="content" style="height: calc(100% - (22px * var(--scale))); padding:0;">
+              <div class="scrollframe" style="height: 100%; border:0; grid-template-columns: 1fr calc(16px * var(--scale));">
+                <div class="pane" style="padding: calc(10px * var(--scale)); touch-action: pan-y;">
+                  <div style="border: var(--winBorder) solid #000; padding: calc(10px * var(--scale)); background:#fff;">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: calc(10px * var(--scale));">
+                      <div>
+                        <div style="font-size: calc(18px * var(--scale)); font-weight:700; line-height:1.1;">ENDIVIA</div>
+                        <div class="muted" style="margin-top: calc(4px * var(--scale));">
+                          Orbital Hotel · Dock A / Ring 3
+                        </div>
+                      </div>
+                      <div style="text-align:right;">
+                        <div style="font-weight:700;">Position</div>
+                        <div class="muted">
+                          Altitude: <b>412 km</b><br/>
+                          Inclination: <b>51.6°</b>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="height: calc(10px * var(--scale));"></div>
+
+                    <div style="display:flex; gap: calc(8px * var(--scale)); flex-wrap:wrap;">
+                      <button class="btn" data-endivia-tab="rooms">Rooms</button>
+                      <button class="btn" data-endivia-tab="about">About</button>
+                      <button class="btn" data-endivia-tab="orbit">Orbit</button>
+                      <button class="btn" data-endivia-tab="contact">Contact</button>
+                      <div style="margin-left:auto; display:flex; gap: calc(8px * var(--scale)); align-items:center;">
+                        <span class="muted">Status:</span>
+                        <span style="border: var(--winBorder) solid #000; padding: 2px 8px; background:#fff; font-weight:700;">DOCKED</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="height: calc(10px * var(--scale));"></div>
+
+                  <div id="endiviaPage">
+
+                    <section data-endivia-page="rooms">
+                      <div style="font-weight:700; font-size: calc(14px * var(--scale));">Featured Rooms</div>
+                      <div class="muted" style="margin: calc(6px * var(--scale)) 0 calc(10px * var(--scale));">
+                        All rooms include vacuum-rated viewports, radiation-shielded sleep pods, and station-wide mesh uplink.
+                      </div>
+
+                      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: calc(10px * var(--scale));">
+                        <div style="border: var(--winBorder) solid #000; background:#fff;">
+                          <div style="border-bottom: var(--winBorder) solid #000; padding: calc(8px * var(--scale)); font-weight:700;">
+                            Capsule Classic
+                          </div>
+                          <div style="padding: calc(8px * var(--scale));">
+                            <div class="muted">Single · Quiet deck</div>
+                            <ul style="margin: calc(6px * var(--scale)) 0 0; padding-left: 18px;">
+                              <li>1 sleep pod + privacy curtain</li>
+                              <li>Shared hygiene bay access</li>
+                              <li>Viewport “star-slit”</li>
+                            </ul>
+                            <div style="height: calc(8px * var(--scale));"></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                              <span style="font-weight:700;">₡ 120 / night</span>
+                              <button class="btn" data-endivia-book="Capsule Classic">Book</button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style="border: var(--winBorder) solid #000; background:#fff;">
+                          <div style="border-bottom: var(--winBorder) solid #000; padding: calc(8px * var(--scale)); font-weight:700;">
+                            Vista Suite
+                          </div>
+                          <div style="padding: calc(8px * var(--scale));">
+                            <div class="muted">Double · Earth-facing</div>
+                            <ul style="margin: calc(6px * var(--scale)) 0 0; padding-left: 18px;">
+                              <li>Panoramic viewport</li>
+                              <li>Private hygiene module</li>
+                              <li>Micro-gravity lounge</li>
+                            </ul>
+                            <div style="height: calc(8px * var(--scale));"></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                              <span style="font-weight:700;">₡ 320 / night</span>
+                              <button class="btn" data-endivia-book="Vista Suite">Book</button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style="border: var(--winBorder) solid #000; background:#fff;">
+                          <div style="border-bottom: var(--winBorder) solid #000; padding: calc(8px * var(--scale)); font-weight:700;">
+                            Garden Atrium Loft
+                          </div>
+                          <div style="padding: calc(8px * var(--scale));">
+                            <div class="muted">Double · Ring 3 greenhouse</div>
+                            <ul style="margin: calc(6px * var(--scale)) 0 0; padding-left: 18px;">
+                              <li>Hydroponic aroma zone</li>
+                              <li>Low-noise air circulation</li>
+                              <li>Tea service “Endive Blend”</li>
+                            </ul>
+                            <div style="height: calc(8px * var(--scale));"></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                              <span style="font-weight:700;">₡ 260 / night</span>
+                              <button class="btn" data-endivia-book="Garden Atrium Loft">Book</button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style="border: var(--winBorder) solid #000; background:#fff;">
+                          <div style="border-bottom: var(--winBorder) solid #000; padding: calc(8px * var(--scale)); font-weight:700;">
+                            Commander’s Corner
+                          </div>
+                          <div style="padding: calc(8px * var(--scale));">
+                            <div class="muted">Single · Dock-adjacent</div>
+                            <ul style="margin: calc(6px * var(--scale)) 0 0; padding-left: 18px;">
+                              <li>Fast egress path</li>
+                              <li>Hard-mount luggage rack</li>
+                              <li>Station briefing feed</li>
+                            </ul>
+                            <div style="height: calc(8px * var(--scale));"></div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                              <span style="font-weight:700;">₡ 180 / night</span>
+                              <button class="btn" data-endivia-book="Commander’s Corner">Book</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style="height: calc(12px * var(--scale));"></div>
+                      <div style="border: var(--winBorder) solid #000; background:#fff; padding: calc(10px * var(--scale));">
+                        <div style="font-weight:700;">Amenities</div>
+                        <div class="muted" style="margin-top: calc(6px * var(--scale));">
+                          Spin-gravity shower stalls · Cupola lounge reservations · EVA photo deck (guided) ·
+                          24/7 galley with “crumb-safe” pastry options
+                        </div>
+                      </div>
+                    </section>
+
+                    <section data-endivia-page="about" style="display:none;">
+                      <div style="font-weight:700; font-size: calc(14px * var(--scale));">About Endivia</div>
+                      <div style="height: calc(8px * var(--scale));"></div>
+                      <div style="border: var(--winBorder) solid #000; background:#fff; padding: calc(10px * var(--scale));">
+                        <p style="margin:0;">
+                          <b>Endivia</b> is a boutique hotel embedded within a working space station. We’re built for
+                          travelers who want the romance of orbit without the chaos of a full expedition.
+                        </p>
+                        <div style="height: calc(10px * var(--scale));"></div>
+                        <div class="muted">
+                          Signature experience: a “night pass” to the cupola during orbital dawn, with a guided view of
+                          the terminator line sweeping across Earth.
+                        </div>
+                      </div>
+
+                      <div style="height: calc(10px * var(--scale));"></div>
+                      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: calc(10px * var(--scale));">
+                        <div style="border: var(--winBorder) solid #000; background:#fff; padding: calc(10px * var(--scale));">
+                          <div style="font-weight:700;">Check-in</div>
+                          <div class="muted" style="margin-top: calc(6px * var(--scale));">
+                            Decompression briefing · Suit lock training · Mesh credential issuance
+                          </div>
+                        </div>
+                        <div style="border: var(--winBorder) solid #000; background:#fff; padding: calc(10px * var(--scale));">
+                          <div style="font-weight:700;">Dining</div>
+                          <div class="muted" style="margin-top: calc(6px * var(--scale));">
+                            Endive Blend tea · “No-crumb” croissants · Fresh greens from Ring 3
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+
+                    <section data-endivia-page="orbit" style="display:none;">
+                      <div style="font-weight:700; font-size: calc(14px * var(--scale));">Orbit Details</div>
+                      <div style="height: calc(8px * var(--scale));"></div>
+
+                      <div style="border: var(--winBorder) solid #000; background:#fff; padding: calc(10px * var(--scale));">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: calc(10px * var(--scale));">
+                          <div>
+                            <div style="font-weight:700;">Altitude</div>
+                            <div class="muted">412 km (mean)</div>
+                          </div>
+                          <div>
+                            <div style="font-weight:700;">Inclination</div>
+                            <div class="muted">51.6°</div>
+                          </div>
+                          <div>
+                            <div style="font-weight:700;">Period</div>
+                            <div class="muted">~92 minutes</div>
+                          </div>
+                          <div>
+                            <div style="font-weight:700;">Local “Day”</div>
+                            <div class="muted">16 sunrises / 24h</div>
+                          </div>
+                        </div>
+
+                        <div style="height: calc(10px * var(--scale));"></div>
+                        <div class="muted">
+                          For safety and privacy, Endivia publishes location in orbital elements instead of ground address.
+                          Docking windows vary by station traffic and attitude control schedules.
+                        </div>
+                      </div>
+                    </section>
+
+                    <section data-endivia-page="contact" style="display:none;">
+                      <div style="font-weight:700; font-size: calc(14px * var(--scale));">Contact</div>
+                      <div style="height: calc(8px * var(--scale));"></div>
+
+                      <div style="border: var(--winBorder) solid #000; background:#fff; padding: calc(10px * var(--scale));">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: calc(10px * var(--scale));">
+                          <div>
+                            <div style="font-weight:700;">Relay</div>
+                            <div class="muted">ENDIVIA-OPS / Channel 7</div>
+                          </div>
+                          <div>
+                            <div style="font-weight:700;">Dock</div>
+                            <div class="muted">Dock A · Airlock 2</div>
+                          </div>
+                        </div>
+                        <div style="height: calc(10px * var(--scale));"></div>
+                        <div class="muted">
+                          For bookings, tap a room’s “Book” button. (Fictional demo site inside the mock system.)
+                        </div>
+                      </div>
+                    </section>
+
+                  </div>
+                </div>
+                <div class="bar" aria-hidden="true"><div class="thumb"></div></div>
+              </div>
+            </div>
+            <div class="resize-handle" data-resize="win-endivia" title="Resize"></div>
+          </div>
+
+          
+          <div class="window" id="win-orbitmap" style="left:210px; top:120px; width:620px; height:420px;">
+            <div class="titlebar">
+              <div class="closebox" data-close="win-orbitmap">×</div>
+              <div class="wintitle">Orbit Map · Day/Night + Ground Track</div>
+            </div>
+            <div class="content" style="height: calc(100% - (22px * var(--scale)));">
+              <div style="border: var(--winBorder) solid #000; background:#fff; padding: calc(8px * var(--scale));">
+                <div style="display:flex; gap: calc(10px * var(--scale)); align-items:center; flex-wrap:wrap;">
+                  <div style="font-weight:700;">Live Earth</div>
+                  <div class="muted" id="orbitMapTime">--</div>
+                  <div style="margin-left:auto; display:flex; gap: calc(8px * var(--scale));">
+                    <button class="btn" id="orbitMapRecenter">Recenter</button>
+                    <button class="btn" id="orbitMapTrail">Trail: ON</button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="height: calc(8px * var(--scale));"></div>
+
+              <div style="border: var(--winBorder) solid #000; background:#fff; padding: calc(8px * var(--scale)); height: calc(100% - (60px * var(--scale)));">
+                <canvas id="orbitCanvas" width="960" height="520" style="
+                  width:100%;
+                  height: calc(100% - (28px * var(--scale)));
+                  display:block;
+                  border: var(--winBorder) solid #000;
+                  image-rendering: pixelated;
+                  touch-action:none;
+                "></canvas>
+
+                <div class="muted" id="orbitReadout" style="margin-top: calc(6px * var(--scale));">
+                  Subsolar: -- · Station: --
+                </div>
+              </div>
+            </div>
+            <div class="resize-handle" data-resize="win-orbitmap" title="Resize"></div>
+          </div>
+
+<div class="window dialog" id="win-about" style="left:260px; top:120px;">
             <div class="titlebar">
               <div class="closebox" data-close="win-about">×</div>
               <div class="wintitle">About the Macintosh</div>
@@ -1014,6 +1324,16 @@
     if(!win) return;
     win.classList.add("visible");
     setFront(win);
+
+    // If a window was hidden, canvases may have measured as 0x0; re-measure when shown.
+    if(id === "win-orbitmap"){
+      setTimeout(()=>{
+        try{
+          if(window.__orbitMapResize) window.__orbitMapResize();
+          else if(typeof drawOrbitMap === "function") drawOrbitMap();
+        }catch(e){}
+      }, 120);
+    }
   }
   function hideWin(id){
     const win = document.getElementById(id);
@@ -1033,10 +1353,39 @@
     });
   });
 
+
+// ✅ Dialog buttons like "OK/Close" use data-close too (not only the titlebar closebox).
+// Use delegated handlers to make sure it works on mobile (some browsers don't fire click reliably after pointer capture).
+function handleDataClose(e){
+  const el = e.target.closest("[data-close]");
+  if(!el) return;
+  const id = el.getAttribute("data-close");
+  if(id) hideWin(id);
+  e.preventDefault?.();
+  e.stopPropagation?.();
+}
+ui.addEventListener("click", handleDataClose, true);
+ui.addEventListener("pointerup", handleDataClose, true);
+
   // bring window to front
   $$(".window", ui).forEach(win => win.addEventListener("pointerdown", () => setFront(win)));
 
   function clearIconSelection(){ $$(".icon", ui).forEach(i => i.classList.remove("selected")); }
+
+  // ===== Desktop initial icon positions (for "Clean Up Desktop" restore) =====
+  function captureInitialDesktopPositions(){
+    $$(".icon", ui).forEach(icon=>{
+      icon.dataset.initLeft = icon.style.left || (icon.getAttribute("style")||"").match(/left:\s*([^;]+)/)?.[1]?.trim() || "";
+      icon.dataset.initTop  = icon.style.top  || (icon.getAttribute("style")||"").match(/top:\s*([^;]+)/)?.[1]?.trim()  || "";
+    });
+  }
+  function restoreInitialDesktopPositions(){
+    $$(".icon", ui).forEach(icon=>{
+      if(icon.dataset.initLeft) icon.style.left = icon.dataset.initLeft;
+      if(icon.dataset.initTop)  icon.style.top  = icon.dataset.initTop;
+    });
+  }
+
 
   // Touch open helpers
   function addTapOpen(el, onOpen){
@@ -1285,6 +1634,8 @@
       case "calc": showWin("win-calc"); break;
       case "music": showWin("win-music"); break;
       case "about": showWin("win-about"); break;
+      case "endivia": showWin("win-endivia"); break;
+            case "orbitmap": showWin("win-orbitmap"); break;
       case "trash": showWin("win-trash"); break;
       default: beep();
     }
@@ -1356,39 +1707,9 @@
   }
 
   function cleanUpDesktop(){
-    const fit = getFit();
-    const dr = desktopRect();
-    const dw = dr.width / fit;
-    const dh = dr.height / fit;
-
-    const scale = getScale();
-    const icons = $$(".icon", ui);
-    const trash = $("#icon-trash");
-
-    const margin = Math.round(12 * scale);
-    const colW   = Math.round(92 * scale);
-    const rowH   = Math.round(96 * scale);
-    const iconW  = Math.round(76 * scale);
-    const iconH  = Math.round(80 * scale);
-
-    if(trash){
-      trash.style.left = (dw - iconW - margin) + "px";
-      trash.style.top  = margin + "px";
-    }
-
-    let x = margin, y = margin;
-
-    icons
-      .filter(i => i !== trash)
-      .sort((a,b) => a.id.localeCompare(b.id))
-      .forEach(icon => {
-        icon.style.left = x + "px";
-        icon.style.top  = y + "px";
-        y += rowH;
-        if(y + iconH > dh - margin){ y = margin; x += colW; }
-        if(x + iconW > dw - margin){ x = margin; }
-      });
-
+    // Restore the original icon layout (System 1 style) instead of reflowing.
+    restoreInitialDesktopPositions();
+    clearIconSelection();
     beep();
   }
 
@@ -1399,6 +1720,7 @@
       case "openNote": showWin("win-note"); setTimeout(()=>$("#noteArea")?.focus(), 50); break;
       case "openCalc": showWin("win-calc"); break;
       case "openMusic": showWin("win-music"); break;
+      case "openOrbitMap": showWin("win-orbitmap"); break;
       case "cleanup": cleanUpDesktop(); break;
 
       case "recenter": resetViewToInitial(); break;
@@ -1554,11 +1876,548 @@
     syncMusicUI();
   });
 
+
+  // ===== Endivia (in-system website) =====
+  function showEndiviaTab(name){
+    const pages = $$('#endiviaPage [data-endivia-page]');
+    pages.forEach(p => p.style.display = (p.getAttribute('data-endivia-page') === name) ? '' : 'none');
+  }
+  showEndiviaTab('rooms');
+
+  $$('#win-endivia [data-endivia-tab]').forEach(btn => {
+    btn.addEventListener('click', () => showEndiviaTab(btn.getAttribute('data-endivia-tab')));
+  });
+
+  $$('#win-endivia [data-endivia-book]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const room = btn.getAttribute('data-endivia-book');
+      alertBox('Endivia Booking', `已选择房型：${room}\n\n(演示站点：未实际提交订单)`);
+    });
+  });
+
   // Init
   resetViewToInitial();
+  captureInitialDesktopPositions();
   showWin("win-finder");
   setFront($("#win-finder"));
   syncMusicUI();
+
+  // ===== Orbit Map (Day/Night Terminator + Station Ground Track) =====
+  const orbit = {
+    altitude_km: 412,
+    inc_deg: 51.6,
+    period_s: 92 * 60,
+    earth_rot: 7.2921159e-5, // rad/s
+    epoch_ms: Date.now(),
+    trail: [],
+    trailOn: true
+  };
+
+  const orbitCanvas = document.getElementById("orbitCanvas");
+  const orbitCtx = orbitCanvas ? orbitCanvas.getContext("2d") : null;
+  const orbitReadout = document.getElementById("orbitReadout");
+  const orbitMapTime = document.getElementById("orbitMapTime");
+
+  // Build a real pixel-art world map (monochrome) once, then scale it up on the main canvas.
+  const worldMap = { w: 240, h: 120, cvs: null, ctx: null, built: false };
+  function buildPixelWorldMap(){
+    if(worldMap.built) return;
+    worldMap.cvs = document.createElement("canvas");
+    worldMap.cvs.width = worldMap.w;
+    worldMap.cvs.height = worldMap.h;
+    worldMap.ctx = worldMap.cvs.getContext("2d");
+    const c = worldMap.ctx;
+
+    // ocean
+    c.imageSmoothingEnabled = false;
+    c.fillStyle = "#fff";
+    c.fillRect(0,0,worldMap.w,worldMap.h);
+
+    // continents (drawn in lon/lat space then rasterized -> pixel map look)
+    function poly(points){
+      c.beginPath();
+      points.forEach((p,i)=>{
+        const xy = lonLatToXY(p[0], p[1], worldMap.w, worldMap.h);
+        if(i===0) c.moveTo(xy.x, xy.y); else c.lineTo(xy.x, xy.y);
+      });
+      c.closePath();
+      c.fill();
+    }
+    c.fillStyle = "#000";
+
+    // North America (rough but recognizable)
+    poly([[-168,12],[-140,15],[-125,30],[-120,45],[-130,58],[-150,70],[-168,62],[-168,12]]);
+    poly([[-125,25],[-100,20],[-85,25],[-80,35],[-88,48],[-105,55],[-120,48],[-125,25]]);
+    poly([[-55,50],[-20,55],[-20,75],[-55,78],[-70,70],[-55,50]]); // Greenland-ish
+
+    // South America
+    poly([[-82,12],[-68,10],[-50,-5],[-44,-25],[-54,-55],[-70,-55],[-80,-30],[-82,12]]);
+
+    // Europe + Asia (Eurasia big mass)
+    poly([[-10,35],[15,32],[40,40],[60,55],[90,65],[120,62],[150,55],[170,50],[170,75],[-10,75],[-25,60],[-10,35]]);
+    // India / SEA bump
+    poly([[70,25],[85,20],[100,10],[112,5],[110,-5],[95,0],[82,10],[70,25]]);
+    // Japan / islands
+    poly([[130,30],[140,30],[146,38],[140,45],[132,42],[130,30]]);
+    // Indonesia
+    poly([[105,0],[120,-5],[135,-5],[140,-10],[125,-12],[110,-10],[105,0]]);
+
+    // Africa
+    poly([[-18,35],[10,35],[35,25],[45,5],[40,-20],[25,-35],[5,-35],[-10,-25],[-18,0],[-18,35]]);
+    // Madagascar
+    poly([[46,-13],[52,-15],[52,-25],[47,-26],[46,-13]]);
+
+    // Australia
+    poly([[112,-10],[155,-10],[160,-25],[150,-42],[120,-44],[110,-30],[112,-10]]);
+
+    // Antarctica strip
+    poly([[-180,-72],[180,-72],[180,-90],[-180,-90]]);
+
+    // Add a tiny bit of coastline "pixel jitter" for a more authentic bitmap feel
+    const img = c.getImageData(0,0,worldMap.w,worldMap.h);
+    const d = img.data;
+    function isLand(ix){
+      return d[ix]===0 && d[ix+1]===0 && d[ix+2]===0 && d[ix+3]>0;
+    }
+    for(let y=1; y<worldMap.h-1; y++){
+      for(let x=1; x<worldMap.w-1; x++){
+        const i = (y*worldMap.w + x)*4;
+        const land = isLand(i);
+        if(!land) continue;
+        // if any neighbor is ocean, randomly nibble a pixel to make jagged edges
+        const n1 = ((y-1)*worldMap.w + x)*4;
+        const n2 = ((y+1)*worldMap.w + x)*4;
+        const n3 = (y*worldMap.w + (x-1))*4;
+        const n4 = (y*worldMap.w + (x+1))*4;
+        const edge = !(isLand(n1)&&isLand(n2)&&isLand(n3)&&isLand(n4));
+        if(edge){
+          // deterministic pseudo-random based on coords
+          const r = (x*73856093 ^ y*19349663) & 255;
+          if(r < 18){
+            d[i]=255; d[i+1]=255; d[i+2]=255; d[i+3]=255;
+          }
+        }
+      }
+    }
+    c.putImageData(img,0,0);
+
+    worldMap.built = true;
+  }
+
+  function drawWorldMap(ctx, W, H){
+    buildPixelWorldMap();
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(worldMap.cvs, 0, 0, W, H);
+    ctx.restore();
+  }
+  const btnOrbitRecenter = document.getElementById("orbitMapRecenter");
+  const btnOrbitTrail = document.getElementById("orbitMapTrail");
+
+  function deg2rad(d){ return d*Math.PI/180; }
+  function rad2deg(r){ return r*180/Math.PI; }
+  function wrapLon(lon){ return ((lon + 180) % 360 + 360) % 360 - 180; }
+  function clampLat(lat){ return Math.max(-89.999, Math.min(89.999, lat)); }
+
+  // Solar position (lightweight, good enough for a moving terminator)
+  function solarDeclinationRad(date){
+    const start = Date.UTC(date.getUTCFullYear(),0,1);
+    const doy = (Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) - start) / 86400000 + 1;
+    const gamma = 2*Math.PI/365 * (doy - 1 + (date.getUTCHours()-12)/24);
+    return (0.006918
+      - 0.399912*Math.cos(gamma) + 0.070257*Math.sin(gamma)
+      - 0.006758*Math.cos(2*gamma) + 0.000907*Math.sin(2*gamma)
+      - 0.002697*Math.cos(3*gamma) + 0.00148*Math.sin(3*gamma));
+  }
+  function subsolarLonDeg(date){
+    const utcHours = date.getUTCHours() + date.getUTCMinutes()/60 + date.getUTCSeconds()/3600;
+    return wrapLon((12 - utcHours) * 15);
+  }
+  function sunUnitVector_ECEF(date){
+    const dec = solarDeclinationRad(date);
+    const lon = deg2rad(subsolarLonDeg(date));
+    return {
+      x: Math.cos(dec)*Math.cos(lon),
+      y: Math.cos(dec)*Math.sin(lon),
+      z: Math.sin(dec),
+      dec, lon
+    };
+  }
+  function isDay(latDeg, lonDeg, sun){
+    const lat = deg2rad(latDeg), lon = deg2rad(lonDeg);
+    const nx = Math.cos(lat)*Math.cos(lon);
+    const ny = Math.cos(lat)*Math.sin(lon);
+    const nz = Math.sin(lat);
+    return (nx*sun.x + ny*sun.y + nz*sun.z) > 0;
+  }
+  function terminatorLatDeg(lonDeg, sun){
+    const dlon = deg2rad(wrapLon(lonDeg - rad2deg(sun.lon)));
+    const sinD = Math.sin(sun.dec);
+    const cosD = Math.cos(sun.dec);
+    const c = Math.cos(dlon);
+    if(Math.abs(sinD) < 1e-6) return 0;
+    return rad2deg(Math.atan2(-cosD * c, sinD));
+  }
+
+  // Orbit model (simple, demo-grade)
+  function stationSubpoint(date){
+    const t = (date.getTime() - orbit.epoch_ms)/1000;
+    const inc = deg2rad(orbit.inc_deg);
+    const n = 2*Math.PI / orbit.period_s;
+    const nu = n * t;
+
+    const xo = Math.cos(nu);
+    const yo = Math.sin(nu);
+
+    // ECI (RAAN=0)
+    const x_eci = xo;
+    const y_eci = yo*Math.cos(inc);
+    const z_eci = yo*Math.sin(inc);
+
+    // ECEF rotate -theta
+    const theta = orbit.earth_rot * t;
+    const c = Math.cos(-theta), s = Math.sin(-theta);
+    const x = c*x_eci - s*y_eci;
+    const y = s*x_eci + c*y_eci;
+    const z = z_eci;
+
+    const lat = rad2deg(Math.asin(z / Math.hypot(x,y,z)));
+    const lon = wrapLon(rad2deg(Math.atan2(y,x)));
+    return {lat, lon};
+  }
+
+  function lonLatToXY(lon, lat, W, H){
+    const x = (wrapLon(lon) + 180) / 360 * W;
+    const y = (90 - clampLat(lat)) / 180 * H;
+    return {x,y};
+  }
+
+  // Wrapped polyline stroker for lon/lat sequences (handles dateline jumps)
+  function strokeLonLatWrapped(ctx, pts, W, H, opts={}){
+    const offsetX = opts.offsetX || 0;
+    const offsetY = opts.offsetY || 0;
+    let started = false;
+    let prev = null;
+    for(const p of pts){
+      const lon = wrapLon(p.lon);
+      const lat = clampLat(p.lat);
+      const xy = lonLatToXY(lon, lat, W, H);
+      const x = xy.x + offsetX, y = xy.y + offsetY;
+
+      if(prev){
+        const dLon = Math.abs(lon - prev.lon);
+        const dX = Math.abs(x - prev.x);
+        // Split on dateline wrap (either lon jump or big pixel jump)
+        if(dLon > 180 || dX > W/2){
+          started = false;
+        }
+      }
+      if(!started){
+        ctx.moveTo(x, y);
+        started = true;
+      }else{
+        ctx.lineTo(x, y);
+      }
+      prev = { lon, x, y };
+    }
+  }
+
+  // True terminator curve as a great-circle (plane orthogonal to Sun vector)
+  function terminatorPoints(sun, samples=720){
+    const sx = sun.x, sy = sun.y, sz = sun.z;
+
+    // pick an "up" that isn't parallel to sun
+    let ax=0, ay=0, az=1;
+    if(Math.abs(sz) > 0.9){ ax=0; ay=1; az=0; }
+
+    // u = normalize(cross(s, a))
+    let ux = sy*az - sz*ay;
+    let uy = sz*ax - sx*az;
+    let uz = sx*ay - sy*ax;
+    let ul = Math.hypot(ux,uy,uz) || 1;
+    ux/=ul; uy/=ul; uz/=ul;
+
+    // v = cross(s, u)
+    let vx = sy*uz - sz*uy;
+    let vy = sz*ux - sx*uz;
+    let vz = sx*uy - sy*ux;
+
+    const pts = [];
+    for(let i=0;i<=samples;i++){
+      const a = (i/samples) * Math.PI*2;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const x = ca*ux + sa*vx;
+      const y = ca*uy + sa*vy;
+      const z = ca*uz + sa*vz;
+
+      const lat = rad2deg(Math.asin(z));
+      const lon = wrapLon(rad2deg(Math.atan2(y,x)));
+      pts.push({lon, lat});
+    }
+    return pts;
+  }
+
+  function drawTerminatorCurve(ctx, W, H, sun){
+    const pts = terminatorPoints(sun, 720);
+
+    // dark edge
+    ctx.save();
+    ctx.strokeStyle = "rgba(0,0,0,.92)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    strokeLonLatWrapped(ctx, pts, W, H);
+    ctx.stroke();
+
+    // subtle glow
+    ctx.strokeStyle = "rgba(255,255,255,.55)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    strokeLonLatWrapped(ctx, pts, W, H, {offsetY:0.5});
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGraticule(ctx, W, H){
+    ctx.save();
+    ctx.strokeStyle = "rgba(0,0,0,.18)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2,3]);
+    for(let lon=-180; lon<=180; lon+=30){
+      const x = (lon+180)/360*W;
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+    }
+    for(let lat=-60; lat<=60; lat+=30){
+      const y = (90-lat)/180*H;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    // border
+    ctx.strokeStyle = "rgba(0,0,0,.35)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0.5,0.5,W-1,H-1);
+    ctx.restore();
+  }
+
+  function drawLand(ctx, W, H){
+    ctx.save();
+    ctx.fillStyle = "#fff";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+
+    const blobs = [
+      [[-165, 15],[-55,15],[-55,72],[-165,72]],       // N. America
+      [[-85,-55],[-30,-55],[-30,12],[-85,12]],        // S. America
+      [[-10, 10],[170,10],[170,75],[-10,75]],         // Eurasia
+      [[-20,-35],[50,-35],[50,35],[-20,35]],          // Africa
+      [[110,-45],[155,-45],[155,-10],[110,-10]],      // Australia
+      [[-60, 60],[-20,60],[-20,80],[-60,80]],         // Greenland
+      [[-180,-90],[180,-90],[180,-72],[-180,-72]]     // Antarctica strip
+    ];
+
+    for(const poly of blobs){
+      ctx.beginPath();
+      poly.forEach((p,i)=>{
+        const xy = lonLatToXY(p[0], p[1], W, H);
+        if(i===0) ctx.moveTo(xy.x, xy.y); else ctx.lineTo(xy.x, xy.y);
+      });
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+
+  function drawNightMask(ctx, W, H, sun){
+    // Pixel-ish night overlay by sampling a coarse grid and classifying day/night via dot product.
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+
+    const step = Math.max(2, Math.floor(Math.min(W, H) / 180)); // bigger => chunkier pixels
+    ctx.fillStyle = "rgba(0,0,0,.52)";
+
+    for(let y=0; y<H; y+=step){
+      const lat = 90 - ((y + step*0.5) / H) * 180;
+      for(let x=0; x<W; x+=step){
+        const lon = (x + step*0.5) / W * 360 - 180;
+        if(!isDay(lat, lon, sun)){
+          ctx.fillRect(x, y, step, step);
+        }
+      }
+    }
+
+    // Crisp terminator curve on top
+    drawTerminatorCurve(ctx, W, H, sun);
+
+    ctx.restore();
+  }
+
+  function drawStation(ctx, W, H, station){
+    const p = lonLatToXY(station.lon, station.lat, W, H);
+
+    // marker
+    ctx.save();
+    ctx.fillStyle = "#000";
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 6, 0, Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+
+    // tiny "station" cross
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(p.x-10, p.y); ctx.lineTo(p.x+10, p.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.x, p.y-10); ctx.lineTo(p.x, p.y+10); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawTrail(ctx, W, H){
+    if(!orbit.trailOn || orbit.trail.length < 2) return;
+    ctx.save();
+    ctx.strokeStyle = "rgba(0,0,0,.6)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let moved = false;
+    for(const pt of orbit.trail){
+      const p = lonLatToXY(pt.lon, pt.lat, W, H);
+      if(!moved){ ctx.moveTo(p.x, p.y); moved = true; }
+      else ctx.lineTo(p.x, p.y);
+    }
+    ctx.strokeStyle = "rgba(255,255,255,.9)";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(0,0,0,.85)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawGroundTrack(ctx, W, H, now){
+    // Draw one full orbit behind and ahead of now (solid past, dashed future)
+    const nowMs = now.getTime();
+    const periodMs = orbit.period_s * 1000;
+    const startMs = nowMs - periodMs;
+    const endMs   = nowMs + periodMs;
+    const stepMs  = 30 * 1000; // 30s samples
+
+    const past = [];
+    const future = [];
+
+    for(let t=startMs; t<=endMs; t+=stepMs){
+      const st = stationSubpoint(new Date(t));
+      (t <= nowMs ? past : future).push(st);
+    }
+
+    function strokeTrack(points, dashed){
+      if(points.length < 2) return;
+      ctx.save();
+      ctx.setLineDash(dashed ? [8,6] : []);
+      ctx.beginPath();
+      strokeLonLatWrapped(ctx, points, W, H);
+      // dual-stroke so the track is visible over both ocean (white) and land (black)
+      ctx.strokeStyle = "rgba(255,255,255,.95)";
+      ctx.lineWidth = 5;
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(0,0,0,.9)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Past (solid) and future (dashed)
+    strokeTrack(past, false);
+    strokeTrack(future, true);
+
+    // Small sample dots (classic feel)
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,.85)";
+    ctx.strokeStyle = "rgba(0,0,0,.85)";
+    ctx.lineWidth = 1;
+    for(const p of past){
+      const xy = lonLatToXY(p.lon, p.lat, W, H);
+      ctx.fillRect(xy.x-1, xy.y-1, 2, 2);
+      ctx.strokeRect(xy.x-1, xy.y-1, 2, 2);
+    }
+    ctx.restore();
+  }
+
+  function drawOrbitMap(){
+    if(!orbitCtx || !orbitCanvas) return;
+
+    const now = new Date();
+    const sun = sunUnitVector_ECEF(now);
+    const st  = stationSubpoint(now);
+
+    // trail: keep last 2 hours worth
+    orbit.trail.push({lat: st.lat, lon: st.lon, t: now.getTime()});
+    const cutoff = now.getTime() - 2*60*60*1000;
+    orbit.trail = orbit.trail.filter(p => p.t >= cutoff);
+
+    const W = orbitCanvas.width, H = orbitCanvas.height;
+
+    // background
+    orbitCtx.clearRect(0,0,W,H);
+    orbitCtx.fillStyle = "#fff";
+    orbitCtx.fillRect(0,0,W,H);
+    drawWorldMap(orbitCtx, W, H);
+    drawGraticule(orbitCtx, W, H);
+    drawNightMask(orbitCtx, W, H, sun);
+    drawGroundTrack(orbitCtx, W, H, now);
+    drawTrail(orbitCtx, W, H);
+    drawStation(orbitCtx, W, H, st);
+
+    // readout
+    const sslat = rad2deg(sun.dec);
+    const sslon = wrapLon(rad2deg(sun.lon));
+    if(orbitReadout){
+      orbitReadout.innerHTML =
+        'Subsolar: <b>' + sslat.toFixed(1) + '°</b>, <b>' + sslon.toFixed(1) + '°</b> · ' +
+        'Station: <b>' + st.lat.toFixed(1) + '°</b>, <b>' + st.lon.toFixed(1) + '°</b>';
+    }
+    if(orbitMapTime){
+      orbitMapTime.textContent = now.toLocaleString();
+    }
+  }
+
+  function initOrbitMap(){
+    if(!orbitCanvas) return;
+
+    // scale canvas to device pixel ratio for crispness
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    function resizeCanvas(){
+      const rect = orbitCanvas.getBoundingClientRect();
+      const w = Math.max(320, Math.floor(rect.width * dpr));
+      const h = Math.max(200, Math.floor(rect.height * dpr));
+      orbitCanvas.width = w;
+      orbitCanvas.height = h;
+      drawOrbitMap();
+    }
+    // expose for showWin() so it can redraw after the window becomes visible
+    window.__orbitMapResize = resizeCanvas;
+    window.addEventListener("resize", resizeCanvas);
+    setTimeout(resizeCanvas, 100);
+
+    // buttons
+    if(btnOrbitRecenter){
+      btnOrbitRecenter.addEventListener("click", ()=>{ orbit.trail = []; drawOrbitMap(); });
+    }
+    if(btnOrbitTrail){
+      btnOrbitTrail.addEventListener("click", ()=>{
+        orbit.trailOn = !orbit.trailOn;
+        btnOrbitTrail.textContent = "Trail: " + (orbit.trailOn ? "ON" : "OFF");
+        drawOrbitMap();
+      });
+    }
+
+    // refresh
+    setInterval(drawOrbitMap, 1000);
+  }
+  initOrbitMap();
+
 </script>
 </body>
 </html>
